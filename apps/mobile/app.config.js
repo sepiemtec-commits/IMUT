@@ -44,7 +44,6 @@ module.exports = {
       "expo-web-browser",
       "expo-secure-store",
       "expo-font",
-      "react-native-reanimated/plugin",
     ],
     experiments: {
       typedRoutes: true,
