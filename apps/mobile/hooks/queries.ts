@@ -2,9 +2,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "../lib/api";
 import type {
   AlertItem,
+  CreateDevicePayload,
   DashboardData,
   DeviceItem,
+  MqttCredentials,
   ReadingPoint,
+  UpdateDevicePayload,
   WeeklyReportItem,
 } from "../lib/types";
 import { useAuthStore } from "../store/auth.store";
@@ -104,6 +107,44 @@ export function useBillingStatus() {
         requiresPayment: boolean;
       }>("/billing/status", { token }),
     enabled: Boolean(token),
+  });
+}
+
+export function useCreateDevice() {
+  const token = useAuthStore((s) => s.accessToken)!;
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: CreateDevicePayload) =>
+      apiFetch<{ device: DeviceItem; mqttCredentials: MqttCredentials }>("/devices", {
+        method: "POST",
+        token,
+        body: JSON.stringify(payload),
+      }),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: queryKeys.devices }),
+  });
+}
+
+export function useUpdateDevice() {
+  const token = useAuthStore((s) => s.accessToken)!;
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...payload }: UpdateDevicePayload & { id: string }) =>
+      apiFetch<{ device: DeviceItem }>(`/devices/${id}`, {
+        method: "PATCH",
+        token,
+        body: JSON.stringify(payload),
+      }),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: queryKeys.devices }),
+  });
+}
+
+export function useDeleteDevice() {
+  const token = useAuthStore((s) => s.accessToken)!;
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      apiFetch(`/devices/${id}`, { method: "DELETE", token }),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: queryKeys.devices }),
   });
 }
 

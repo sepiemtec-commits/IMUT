@@ -2,7 +2,7 @@ import Constants from "expo-constants";
 import { Platform } from "react-native";
 
 // No navegador web, localhost funciona; no celular usa o IP da rede
-const API_URL =
+export const API_BASE_URL =
   Platform.OS === "web"
     ? "http://localhost:3000"
     : (process.env.EXPO_PUBLIC_API_URL ??
@@ -33,7 +33,7 @@ export async function apiFetch<T>(
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const res = await fetch(`${API_URL}/v1${path}`, { ...init, headers });
+  const res = await fetch(`${API_BASE_URL}/v1${path}`, { ...init, headers });
   const body = await res.json().catch(() => ({}));
 
   if (!res.ok) {

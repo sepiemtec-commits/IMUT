@@ -21,15 +21,46 @@ export interface DeviceItem {
   id: string;
   name: string;
   environment: string;
+  serialNumber: string | null;
+  mqttUsername: string;
   status: string;
+  isActive: boolean;
   lastSeenAt: string | null;
   tempMaxCelsius: number;
   humidityMaxPercent: number;
+  alertAfterCycles: number;
+  createdAt: string;
   latestReading: {
     temperature: number;
     humidity: number;
     recordedAt: string;
   } | null;
+}
+
+export interface MqttCredentials {
+  broker: string;
+  username: string;
+  password: string;
+  topic: string;
+}
+
+export interface CreateDevicePayload {
+  name: string;
+  environment: string;
+  serialNumber?: string;
+  mqttPassword: string;
+  tempMaxCelsius?: number;
+  humidityMaxPercent?: number;
+  alertAfterCycles?: number;
+}
+
+export interface UpdateDevicePayload {
+  name?: string;
+  environment?: string;
+  serialNumber?: string;
+  tempMaxCelsius?: number;
+  humidityMaxPercent?: number;
+  alertAfterCycles?: number;
 }
 
 export interface ReadingPoint {
