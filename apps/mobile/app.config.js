@@ -5,16 +5,16 @@ const { config: loadEnv } = require("dotenv");
 loadEnv({ path: path.join(__dirname, ".env") });
 loadEnv({ path: path.join(__dirname, "../../.env") });
 
-const lanIp = process.env.EXPO_PUBLIC_LAN_IP || "192.168.0.23";
-const apiUrl =
-  process.env.EXPO_PUBLIC_API_URL || `http://${lanIp}:3000`;
+const isProduction = process.env.NODE_ENV === "production" || process.env.EAS_BUILD === "true";
+const apiUrl = process.env.EXPO_PUBLIC_API_URL ||
+  (isProduction ? "https://api.imut.app" : "http://192.168.0.23:3000");
 
 /** @type {import('expo/config').ExpoConfig} */
 module.exports = {
   expo: {
     name: "IMUT",
     slug: "imut",
-    version: "0.1.0",
+    version: "1.0.0",
     orientation: "portrait",
     scheme: "imut",
     userInterfaceStyle: "light",
@@ -33,7 +33,7 @@ module.exports = {
     android: {
       package: "app.imut.mobile",
       versionCode: 1,
-      permissions: ["INTERNET", "POST_NOTIFICATIONS", "VIBRATE"],
+      permissions: ["INTERNET", "VIBRATE"],
       adaptiveIcon: {
         foregroundImage: "./assets/adaptive-icon.png",
         backgroundColor: "#0f172a",
@@ -43,7 +43,6 @@ module.exports = {
       "expo-router",
       "expo-web-browser",
       "expo-secure-store",
-      // expo-notifications requer dev build (não funciona no Expo Go SDK 53+)
     ],
     experiments: {
       typedRoutes: true,
@@ -54,5 +53,6 @@ module.exports = {
         projectId: process.env.EXPO_PUBLIC_EAS_PROJECT_ID || "",
       },
     },
+    owner: "imut",
   },
 };

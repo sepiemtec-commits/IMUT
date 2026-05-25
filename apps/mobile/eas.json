@@ -1,12 +1,18 @@
 {
   "cli": {
-    "version": ">= 12.0.0",
+    "version": ">= 14.0.0",
     "appVersionSource": "remote"
   },
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "http://192.168.0.23:3000"
+      }
     },
     "preview": {
       "distribution": "internal",
@@ -14,17 +20,19 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://api.imut.app"
+        "EXPO_PUBLIC_API_URL": "https://api.imut.app",
+        "EAS_BUILD": "true"
       }
     },
     "production": {
       "android": {
         "buildType": "app-bundle"
       },
+      "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://api.imut.app"
-      },
-      "autoIncrement": true
+        "EXPO_PUBLIC_API_URL": "https://api.imut.app",
+        "EAS_BUILD": "true"
+      }
     }
   },
   "submit": {
