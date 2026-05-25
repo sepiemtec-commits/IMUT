@@ -32,10 +32,6 @@
     "pnpm": ">=9.0.0"
   },
   "packageManager": "pnpm@9.15.0",
-  "dependencies": {
-    "expo-font": "~56.0.5",
-    "react-native-reanimated": "4.3.1"
-  },
   "devDependencies": {
     "turbo": "^2.3.0",
     "typescript": "^5.7.0"
