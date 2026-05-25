@@ -50,9 +50,9 @@ module.exports = {
     extra: {
       apiUrl,
       eas: {
-        projectId: process.env.EXPO_PUBLIC_EAS_PROJECT_ID || "",
+        projectId: process.env.EXPO_PUBLIC_EAS_PROJECT_ID || "f3babce0-4664-492a-a2b2-23248c973d3e",
       },
     },
-    owner: "imut",
+    owner: "velfe",
   },
 };
