@@ -123,9 +123,10 @@ export async function loginUser(input: unknown) {
     metadata: { email: ctx.email, role: ctx.role },
   });
 
-  const subscription = await prisma.subscription.findUnique({
-    where: { companyId: ctx.companyId },
-  });
+  const [subscription, company] = await Promise.all([
+    prisma.subscription.findUnique({ where: { companyId: ctx.companyId } }),
+    prisma.company.findUnique({ where: { id: ctx.companyId }, select: { id: true, name: true } }),
+  ]);
 
   return {
     user: {
@@ -134,7 +135,7 @@ export async function loginUser(input: unknown) {
       name: user.name,
       role: ctx.role,
     },
-    company: { id: ctx.companyId },
+    company: { id: ctx.companyId, name: company?.name ?? undefined },
     subscription: subscription
       ? {
           status: subscription.status,

@@ -1,14 +1,22 @@
-import { Pressable, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, Text, View } from "react-native";
 import { router } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "../../store/auth.store";
-import { useBillingStatus } from "../../hooks/queries";
-import { registerPushToken } from "../../lib/push";
+import { useBillingStatus, useMe } from "../../hooks/queries";
+
+function InfoRow({ label, value }: { label: string; value?: string | null }) {
+  return (
+    <View className="flex-row items-center justify-between py-2">
+      <Text className="text-sm text-slate-400">{label}</Text>
+      <Text className="text-sm font-medium text-white">{value ?? "—"}</Text>
+    </View>
+  );
+}
 
 export default function ProfileScreen() {
-  const user = useAuthStore((s) => s.user);
-  const company = useAuthStore((s) => s.company);
   const logout = useAuthStore((s) => s.logout);
   const token = useAuthStore((s) => s.accessToken);
+  const { data: me, isLoading } = useMe();
   const { data: billing } = useBillingStatus();
 
   const handleLogout = async () => {
@@ -16,57 +24,91 @@ export default function ProfileScreen() {
     router.replace("/login");
   };
 
-  const handlePush = async () => {
-    if (token) {
-      try {
-        await registerPushToken(token);
-      } catch {
-        /* permissão negada ou simulador */
-      }
-    }
-  };
+  if (isLoading || !token) {
+    return (
+      <View className="flex-1 items-center justify-center bg-imut-surface">
+        <ActivityIndicator color="#0ea5e9" />
+      </View>
+    );
+  }
+
+  const subStatus = me?.subscription?.status ?? billing?.subscription?.status;
+  const subEnd = me?.subscription?.currentPeriodEnd;
 
   return (
     <View className="flex-1 bg-imut-surface px-4 pt-4">
+      {/* Usuário */}
       <View className="rounded-xl border border-slate-700 bg-slate-800/80 p-4">
-        <Text className="text-xs uppercase text-slate-500">Usuário</Text>
-        <Text className="mt-1 text-lg font-semibold text-white">{user?.name}</Text>
-        <Text className="text-slate-400">{user?.email}</Text>
-        <Text className="mt-2 text-sm text-imut-primary">Papel: {user?.role}</Text>
+        <View className="mb-3 flex-row items-center gap-3">
+          <View className="h-12 w-12 items-center justify-center rounded-full bg-imut-primary/20">
+            <Ionicons name="person" size={28} color="#0ea5e9" />
+          </View>
+          <View className="flex-1">
+            <Text className="text-lg font-bold text-white">{me?.user?.name}</Text>
+            <Text className="text-sm text-slate-400">{me?.user?.email}</Text>
+          </View>
+        </View>
+        <View className="border-t border-slate-700 pt-2">
+          <InfoRow label="Papel" value={me?.role} />
+          {me?.user?.phone && <InfoRow label="Telefone" value={me.user.phone} />}
+        </View>
       </View>
 
+      {/* Empresa */}
       <View className="mt-4 rounded-xl border border-slate-700 bg-slate-800/80 p-4">
-        <Text className="text-xs uppercase text-slate-500">Empresa</Text>
-        <Text className="mt-1 text-lg text-white">{company?.name ?? company?.id}</Text>
-        <Text className="mt-2 text-sm text-slate-400">
-          Assinatura: {billing?.subscription.status ?? "—"}
-        </Text>
+        <View className="mb-1 flex-row items-center gap-2">
+          <Ionicons name="business-outline" size={16} color="#0ea5e9" />
+          <Text className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            Empresa
+          </Text>
+        </View>
+        <InfoRow label="Nome" value={me?.company?.name} />
+        <InfoRow label="Slug" value={me?.company?.slug} />
+        <InfoRow
+          label="Assinatura"
+          value={subStatus}
+        />
+        {subEnd && (
+          <InfoRow
+            label="Válida até"
+            value={new Date(subEnd).toLocaleDateString("pt-BR")}
+          />
+        )}
+        <InfoRow
+          label="Responsáveis"
+          value={
+            me?.limits
+              ? `${me.limits.responsiblesUsed} / ${me.limits.maxResponsibles}`
+              : undefined
+          }
+        />
       </View>
 
-      {user?.role === "OWNER" && (
+      {/* Ações */}
+      {me?.role === "OWNER" && (
         <Pressable
           onPress={() => router.push("/subscription")}
-          className="mt-4 rounded-xl border border-imut-primary bg-slate-800/80 p-4"
+          className="mt-4 flex-row items-center justify-between rounded-xl border border-imut-primary/40 bg-slate-800/80 p-4"
         >
-          <Text className="font-semibold text-imut-primary">Gerenciar assinatura</Text>
+          <View className="flex-row items-center gap-2">
+            <Ionicons name="card-outline" size={20} color="#0ea5e9" />
+            <Text className="font-semibold text-imut-primary">Gerenciar assinatura</Text>
+          </View>
           {billing?.requiresPayment && (
-            <Text className="mt-1 text-sm text-amber-400">Pagamento pendente</Text>
+            <View className="rounded-full bg-amber-400/20 px-2 py-0.5">
+              <Text className="text-xs text-amber-400">Pendente</Text>
+            </View>
           )}
+          <Ionicons name="chevron-forward" size={16} color="#0ea5e9" />
         </Pressable>
       )}
 
       <Pressable
-        onPress={() => void handlePush()}
-        className="mt-3 rounded-xl border border-slate-700 bg-slate-800/80 p-4"
-      >
-        <Text className="text-white">Ativar notificações push</Text>
-      </Pressable>
-
-      <Pressable
         onPress={handleLogout}
-        className="mt-8 items-center rounded-xl bg-red-900/40 py-3"
+        className="mt-4 flex-row items-center justify-center gap-2 rounded-xl bg-red-900/30 py-4"
       >
-        <Text className="font-semibold text-red-400">Sair</Text>
+        <Ionicons name="log-out-outline" size={20} color="#f87171" />
+        <Text className="font-semibold text-red-400">Sair da conta</Text>
       </Pressable>
     </View>
   );

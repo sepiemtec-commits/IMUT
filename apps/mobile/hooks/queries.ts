@@ -97,6 +97,22 @@ export function useWeeklyReports() {
   });
 }
 
+export function useMe() {
+  const token = useAuthStore((s) => s.accessToken)!;
+  return useQuery({
+    queryKey: queryKeys.me,
+    queryFn: () =>
+      apiFetch<{
+        user: { id: string; email: string; name: string; phone?: string };
+        company: { id: string; name: string; slug: string };
+        role: string;
+        subscription: { status: string; currentPeriodEnd?: string } | null;
+        limits: { maxResponsibles: number; responsiblesUsed: number };
+      }>("/auth/me", { token }),
+    enabled: Boolean(token),
+  });
+}
+
 export function useBillingStatus() {
   const token = useAuthStore((s) => s.accessToken)!;
   return useQuery({
