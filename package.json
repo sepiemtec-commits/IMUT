@@ -1,0 +1,39 @@
+{
+  "name": "imut",
+  "version": "0.1.0",
+  "private": true,
+  "description": "IMUT — SaaS IoT para monitoramento de temperatura e umidade (ESP32 + MQTT)",
+  "scripts": {
+    "setup": "bash install.sh",
+    "dev": "pnpm --filter @imut/shared build && turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "db:generate": "pnpm --filter @imut/api exec prisma generate",
+    "db:migrate": "pnpm --filter @imut/api exec prisma migrate dev",
+    "db:setup": "pnpm db:push && pnpm db:generate",
+    "db:push": "pnpm --filter @imut/api exec prisma db push",
+    "db:studio": "pnpm --filter @imut/api exec prisma studio",
+    "docker:up": "bash scripts/docker-up.sh",
+    "docker:down": "bash scripts/docker-down.sh",
+    "docker:up:full": "docker-compose -f infra/docker/docker-compose.yml up -d",
+    "docker:down:full": "docker-compose -f infra/docker/docker-compose.yml down",
+    "mqtt:dev": "pnpm --filter @imut/mqtt-ingest dev",
+    "mqtt:build": "pnpm --filter @imut/mqtt-ingest build",
+    "ai:test": "pnpm --filter @imut/ai-analysis test",
+    "worker:dev": "pnpm --filter @imut/worker dev",
+    "mobile:dev": "bash scripts/mobile-expo.sh",
+    "mobile:dev:tunnel": "bash scripts/mobile-expo.sh --tunnel",
+    "mobile:web": "bash scripts/mobile-expo.sh --web",
+    "mobile:stop": "bash scripts/stop-expo.sh"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@9.15.0",
+  "devDependencies": {
+    "turbo": "^2.3.0",
+    "typescript": "^5.7.0"
+  }
+}

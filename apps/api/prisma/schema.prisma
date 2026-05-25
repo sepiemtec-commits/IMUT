@@ -1,0 +1,390 @@
+// IMUT — PostgreSQL (Prisma ORM)
+//
+// Regras de negócio (validar na aplicação):
+//   • máximo 10 Device (ESP32) por Company
+//   • máximo 5 Responsible por Company
+//   • SensorReading: temperatura (°C), umidade (%), timestamp e ambiente
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  OWNER   // dono da empresa / billing
+  ADMIN   // gerencia dispositivos e alertas
+  VIEWER  // somente leitura
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  TRIALING
+  PAST_DUE
+  CANCELED
+  INCOMPLETE
+  UNPAID
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+  CANCELED
+}
+
+enum AlertSeverity {
+  INFO
+  WARNING
+  CRITICAL
+}
+
+enum AlertStatus {
+  OPEN
+  ACKNOWLEDGED
+  RESOLVED
+}
+
+enum NotificationChannel {
+  EMAIL
+  PUSH
+}
+
+enum NotificationDeliveryStatus {
+  PENDING
+  SENT
+  FAILED
+  SKIPPED
+}
+
+enum DeviceStatus {
+  ONLINE
+  OFFLINE
+  INACTIVE
+}
+
+// ─── Autenticação ────────────────────────────────────────────────────────────
+
+model User {
+  id           String         @id @default(cuid())
+  email        String         @unique
+  passwordHash String
+  name         String
+  phone        String?
+  isActive     Boolean        @default(true)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  companyId    String?        @unique // usuário principal (OWNER) — 1:1 com Company
+  company      Company?       @relation("CompanyOwner", fields: [companyId], references: [id], onDelete: SetNull)
+
+  responsible  Responsible?   // se o usuário também for um responsável convidado
+  refreshTokens RefreshToken[]
+  pushTokens    PushToken[]
+  auditLogs     AuditLog[]
+
+  @@index([email])
+}
+
+// ─── Auditoria de segurança ────────────────────────────────────────────────────
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  companyId  String?
+  userId     String?
+  action     String
+  resource   String?
+  resourceId String?
+  method     String?
+  path       String?
+  ip         String?
+  userAgent  String?
+  statusCode Int?
+  success    Boolean  @default(true)
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  company Company? @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  user    User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([companyId, createdAt(sort: Desc)])
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([action, createdAt(sort: Desc)])
+}
+
+enum PushPlatform {
+  IOS
+  ANDROID
+  WEB
+}
+
+/// Token FCM (Firebase Cloud Messaging) para push de alertas
+model PushToken {
+  id        String       @id @default(cuid())
+  userId    String
+  token     String       @unique
+  platform  PushPlatform
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+// ─── Empresa (tenant SaaS) ───────────────────────────────────────────────────
+
+model Company {
+  id               String   @id @default(cuid())
+  name             String
+  slug             String   @unique
+  document         String?  // CNPJ opcional
+  stripeCustomerId String?  @unique
+  timezone         String   @default("America/Sao_Paulo")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  owner            User?    @relation("CompanyOwner")
+
+  responsibles     Responsible[]
+  devices          Device[]
+  sensorReadings   SensorReading[]
+  alerts           Alert[]
+  weeklyReports    WeeklyReport[]
+  aiInsights       AiInsight[]
+  subscription     Subscription?
+  payments         Payment[]
+  auditLogs        AuditLog[]
+
+  @@index([slug])
+}
+
+enum AiInsightType {
+  ANOMALY
+  WEEKLY_SUMMARY
+  PREDICTION
+}
+
+// ─── Responsáveis (máx. 5 por empresa) ───────────────────────────────────────
+
+model Responsible {
+  id        String   @id @default(cuid())
+  companyId String
+  name      String
+  email     String
+  phone     String?
+  role      UserRole @default(VIEWER)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // vínculo opcional quando o responsável cria login no app
+  userId    String?  @unique
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, email])
+  @@index([companyId])
+}
+
+// ─── Dispositivos ESP32 (máx. 10 por empresa) ────────────────────────────────
+
+model Device {
+  id               String       @id @default(cuid())
+  companyId        String
+  name             String
+  /// Ambiente monitorado (ex.: "Câmara fria", "Estoque A")
+  environment      String
+  serialNumber     String?
+  mqttUsername     String       @unique
+  mqttPasswordHash String
+  /// Limiar °C — alerta após ciclos consecutivos acima
+  tempMaxCelsius      Float     @default(30)
+  humidityMaxPercent  Float     @default(80)
+  /// Ciclos de 4 min consecutivos acima do limite (padrão: 2)
+  alertAfterCycles    Int       @default(2)
+  status           DeviceStatus @default(OFFLINE)
+  isActive         Boolean      @default(true)
+  lastSeenAt       DateTime?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  company        Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  sensorReadings SensorReading[]
+  alerts         Alert[]
+  aiInsights     AiInsight[]
+
+  @@index([companyId])
+  @@index([companyId, environment])
+}
+
+// ─── Leituras dos sensores ───────────────────────────────────────────────────
+
+model SensorReading {
+  id          String   @id @default(cuid())
+  companyId   String
+  deviceId    String
+  /// Cópia do ambiente no momento da leitura (histórico imutável)
+  environment String
+  temperature Float    // °C
+  humidity    Float    // %
+  battery     Int?     // % bateria do ESP32, opcional
+  /// Timestamp enviado pelo ESP32 (UTC)
+  recordedAt  DateTime
+  /// Timestamp de ingestão no servidor
+  receivedAt  DateTime @default(now())
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  device  Device  @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@index([deviceId, recordedAt(sort: Desc)])
+  @@index([companyId, recordedAt(sort: Desc)])
+  @@index([companyId, environment, recordedAt(sort: Desc)])
+}
+
+// ─── Alertas ─────────────────────────────────────────────────────────────────
+
+model Alert {
+  id          String        @id @default(cuid())
+  companyId   String
+  deviceId    String?
+  environment String
+  severity    AlertSeverity
+  status      AlertStatus   @default(OPEN)
+  title       String
+  message     String
+  /// temp/umidade no disparo, limiares, etc.
+  metadata    Json?
+  acknowledgedAt DateTime?
+  resolvedAt     DateTime?
+  createdAt   DateTime      @default(now())
+
+  emailSentAt DateTime?
+  pushSentAt  DateTime?
+
+  company       Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  device        Device?              @relation(fields: [deviceId], references: [id], onDelete: SetNull)
+  notifications AlertNotification[]
+
+  @@index([companyId, status])
+  @@index([companyId, environment])
+  @@index([createdAt(sort: Desc)])
+}
+
+model AlertNotification {
+  id         String                     @id @default(cuid())
+  alertId    String
+  channel    NotificationChannel
+  status     NotificationDeliveryStatus @default(PENDING)
+  recipient  String?
+  externalId String?
+  error      String?
+  sentAt     DateTime?
+  createdAt  DateTime                   @default(now())
+
+  alert Alert @relation(fields: [alertId], references: [id], onDelete: Cascade)
+
+  @@index([alertId])
+}
+
+// ─── Relatório semanal ───────────────────────────────────────────────────────
+
+model WeeklyReport {
+  id          String    @id @default(cuid())
+  companyId   String
+  periodStart DateTime
+  periodEnd   DateTime
+  summary     String    @db.Text
+  /// agregados: médias, picos, alertas, insights IA
+  metrics     Json
+  pdfPath     String?
+  emailedAt   DateTime?
+  createdAt   DateTime  @default(now())
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, periodStart])
+  @@index([companyId, periodEnd(sort: Desc)])
+}
+
+// ─── Insights de IA (estatística / TensorFlow futuro) ───────────────────────
+
+model AiInsight {
+  id          String        @id @default(cuid())
+  companyId   String
+  deviceId    String?
+  environment String
+  type        AiInsightType
+  payload     Json
+  narrative   String?       @db.Text
+  createdAt   DateTime      @default(now())
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  device  Device? @relation(fields: [deviceId], references: [id], onDelete: SetNull)
+
+  @@index([companyId, type])
+  @@index([deviceId, createdAt(sort: Desc)])
+}
+
+// ─── Assinatura (Stripe) ─────────────────────────────────────────────────────
+
+model Subscription {
+  id                   String             @id @default(cuid())
+  companyId            String             @unique
+  stripeSubscriptionId String?            @unique
+  stripePriceId        String?
+  status               SubscriptionStatus @default(INCOMPLETE)
+  currentPeriodStart   DateTime?
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean            @default(false)
+  canceledAt           DateTime?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  company  Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  payments Payment[]
+
+  @@index([status])
+}
+
+// ─── Pagamentos ──────────────────────────────────────────────────────────────
+
+model Payment {
+  id                    String        @id @default(cuid())
+  companyId             String
+  subscriptionId        String?
+  stripePaymentIntentId String?       @unique
+  stripeInvoiceId       String?       @unique
+  amountCents           Int
+  currency              String        @default("brl")
+  status                PaymentStatus @default(PENDING)
+  description           String?
+  paidAt                DateTime?
+  failedAt              DateTime?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  subscription Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+
+  @@index([companyId, createdAt(sort: Desc)])
+  @@index([subscriptionId])
+}

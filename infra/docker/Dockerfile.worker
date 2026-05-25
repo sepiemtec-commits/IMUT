@@ -1,0 +1,13 @@
+FROM node:20-alpine AS base
+RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
+WORKDIR /app
+
+COPY package.json pnpm-workspace.yaml ./
+COPY packages/shared ./packages/shared
+COPY services/worker ./services/worker
+COPY apps/api/prisma ./apps/api/prisma
+RUN pnpm install
+RUN pnpm --filter @imut/shared build && pnpm --filter @imut/worker build
+
+WORKDIR /app/services/worker
+CMD ["node", "dist/index.js"]

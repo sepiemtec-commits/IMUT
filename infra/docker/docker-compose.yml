@@ -1,0 +1,89 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: imut-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: imut
+      POSTGRES_PASSWORD: imut_secret
+      POSTGRES_DB: imut
+    ports:
+      - "5432:5432"
+    volumes:
+      - imut_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U imut"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: imut-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - imut_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  api:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.api
+    container_name: imut-api
+    restart: unless-stopped
+    env_file:
+      - ../../.env
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  mqtt-ingest:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.mqtt-ingest
+    container_name: imut-mqtt-ingest
+    restart: unless-stopped
+    env_file:
+      - ../../.env
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.worker
+    container_name: imut-worker
+    restart: unless-stopped
+    env_file:
+      - ../../.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:alpine
+    container_name: imut-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ../nginx/imut.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - api
+
+volumes:
+  imut_pg_data:
+  imut_redis_data:

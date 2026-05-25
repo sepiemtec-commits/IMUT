@@ -1,0 +1,37 @@
+# Apenas PostgreSQL + Redis (desenvolvimento local sem build da API)
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: imut-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: imut
+      POSTGRES_PASSWORD: imut_secret
+      POSTGRES_DB: imut
+    ports:
+      - "5432:5432"
+    volumes:
+      - imut_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U imut"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: imut-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - imut_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  imut_pg_data:
+  imut_redis_data:

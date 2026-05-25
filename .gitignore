@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.expo/
+.turbo/
+*.log
+.env
+.env.local
+apps/mobile/.expo/
+.env.*.local
+!.env.example
+coverage/
+.DS_Store
+*.tsbuildinfo
+apps/api/prisma/migrations/**/migration_lock.toml
+storage/reports/
+apps/mobile/google-play/service-account.json
+apps/mobile/google-play/google-services.json
