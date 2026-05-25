@@ -2,9 +2,12 @@ import "../global.css";
 import { useEffect } from "react";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { QueryProvider } from "../providers/QueryProvider";
 import { useAuthStore } from "../store/auth.store";
+
+// NativeWind v4 exige modo "class" para dark mode
+StyleSheet.setFlag?.("darkMode", "class");
 
 export default function RootLayout() {
   const hydrate = useAuthStore((s) => s.hydrate);

@@ -1,18 +1,29 @@
 import * as Device from "expo-device";
-import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 import { apiFetch } from "./api";
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-  }),
-});
+// expo-notifications foi removido do Expo Go no SDK 53+
+// Em produção (dev build / EAS), importe de expo-notifications normalmente
+let Notifications: typeof import("expo-notifications") | null = null;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  Notifications = require("expo-notifications");
+} catch {
+  // Expo Go: módulo não disponível
+}
+
+if (Notifications) {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+    }),
+  });
+}
 
 async function ensureAndroidChannel(): Promise<void> {
-  if (Platform.OS === "android") {
+  if (Platform.OS === "android" && Notifications) {
     await Notifications.setNotificationChannelAsync("imut_alerts", {
       name: "Alertas IMUT",
       importance: Notifications.AndroidImportance.HIGH,
@@ -24,9 +35,10 @@ async function ensureAndroidChannel(): Promise<void> {
 /**
  * Solicita permissão e registra token FCM/Expo na API.
  * Em produção, use EAS + FCM credentials no Expo dashboard.
+ * No Expo Go SDK 53+ as notificações push remotas não estão disponíveis.
  */
 export async function registerPushToken(authToken: string): Promise<string | null> {
-  if (!Device.isDevice) return null;
+  if (!Device.isDevice || !Notifications) return null;
 
   await ensureAndroidChannel();
 
@@ -38,7 +50,6 @@ export async function registerPushToken(authToken: string): Promise<string | nul
   }
   if (finalStatus !== "granted") return null;
 
-  // Token nativo FCM/APNs (requer dev build + credenciais FCM no EAS)
   let token: string;
   try {
     const device = await Notifications.getDevicePushTokenAsync();
@@ -67,6 +78,7 @@ export async function registerPushToken(authToken: string): Promise<string | nul
 export function useAlertNotificationListener(
   onAlert: (data: { alertId?: string; environment?: string }) => void,
 ): () => void {
+  if (!Notifications) return () => {};
   const sub = Notifications.addNotificationReceivedListener((notification) => {
     const data = notification.request.content.data as {
       alertId?: string;

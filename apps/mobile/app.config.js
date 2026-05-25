@@ -17,7 +17,7 @@ module.exports = {
     version: "0.1.0",
     orientation: "portrait",
     scheme: "imut",
-    userInterfaceStyle: "automatic",
+    userInterfaceStyle: "light",
     newArchEnabled: false,
     icon: "./assets/icon.png",
     splash: {
@@ -43,13 +43,7 @@ module.exports = {
       "expo-router",
       "expo-web-browser",
       "expo-secure-store",
-      [
-        "expo-notifications",
-        {
-          color: "#0ea5e9",
-          defaultChannel: "imut_alerts",
-        },
-      ],
+      // expo-notifications requer dev build (não funciona no Expo Go SDK 53+)
     ],
     experiments: {
       typedRoutes: true,

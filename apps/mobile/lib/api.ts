@@ -1,9 +1,13 @@
 import Constants from "expo-constants";
+import { Platform } from "react-native";
 
+// No navegador web, localhost funciona; no celular usa o IP da rede
 const API_URL =
-  process.env.EXPO_PUBLIC_API_URL ??
-  (Constants.expoConfig?.extra as { apiUrl?: string } | undefined)?.apiUrl ??
-  "http://localhost:3000";
+  Platform.OS === "web"
+    ? "http://localhost:3000"
+    : (process.env.EXPO_PUBLIC_API_URL ??
+      (Constants.expoConfig?.extra as { apiUrl?: string } | undefined)?.apiUrl ??
+      "http://localhost:3000");
 
 export class ApiError extends Error {
   constructor(
