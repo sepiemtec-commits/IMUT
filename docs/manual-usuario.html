@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>IMUT — Manual do Usuário</title>
+<style>
+  /* ── Geral ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 14px; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    color: #1e293b;
+    background: #fff;
+    line-height: 1.7;
+  }
+
+  /* ── Impressão ── */
+  @media print {
+    .no-print { display: none; }
+    .page-break { page-break-before: always; }
+    body { font-size: 12px; }
+    a { color: inherit; text-decoration: none; }
+  }
+
+  /* ── Layout ── */
+  .container { max-width: 860px; margin: 0 auto; padding: 40px 48px; }
+
+  /* ── Capa ── */
+  .cover {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+    color: #fff;
+    padding: 60px 40px;
+  }
+  .cover-logo {
+    font-size: 72px;
+    font-weight: 900;
+    letter-spacing: -2px;
+    color: #38bdf8;
+    margin-bottom: 8px;
+  }
+  .cover-subtitle {
+    font-size: 20px;
+    color: #94a3b8;
+    margin-bottom: 48px;
+  }
+  .cover-title {
+    font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: #f8fafc;
+  }
+  .cover-version {
+    font-size: 14px;
+    color: #64748b;
+    margin-top: 48px;
+  }
+  .cover-badge {
+    display: inline-block;
+    background: #0ea5e9;
+    color: #fff;
+    padding: 6px 20px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-top: 16px;
+  }
+
+  /* ── Índice ── */
+  .toc { padding: 60px 48px; }
+  .toc h2 { font-size: 24px; color: #0f172a; margin-bottom: 24px; border-bottom: 3px solid #0ea5e9; padding-bottom: 8px; }
+  .toc ol { list-style: none; counter-reset: toc-counter; }
+  .toc ol li {
+    counter-increment: toc-counter;
+    padding: 6px 0;
+    border-bottom: 1px dotted #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+  }
+  .toc ol li::before {
+    content: counter(toc-counter) ".";
+    font-weight: 700;
+    color: #0ea5e9;
+    min-width: 24px;
+  }
+  .toc ol li a { color: #1e293b; text-decoration: none; }
+  .toc ol li .dots { flex: 1; border-bottom: 1px dotted #cbd5e1; }
+  .toc ol li .page { color: #64748b; font-size: 12px; }
+
+  /* ── Seções ── */
+  section { padding: 48px; border-bottom: 1px solid #f1f5f9; }
+  section:last-child { border-bottom: none; }
+
+  h1 { font-size: 28px; font-weight: 800; color: #0f172a; margin-bottom: 8px; }
+  h2 { font-size: 22px; font-weight: 700; color: #0f172a; margin: 32px 0 12px; padding-left: 12px; border-left: 4px solid #0ea5e9; }
+  h3 { font-size: 16px; font-weight: 700; color: #1e293b; margin: 24px 0 8px; }
+  h4 { font-size: 14px; font-weight: 600; color: #334155; margin: 16px 0 4px; }
+
+  p { margin: 10px 0; color: #334155; }
+  ul, ol { margin: 8px 0 8px 24px; }
+  li { margin: 4px 0; color: #334155; }
+  strong { color: #0f172a; }
+
+  /* ── Seção header ── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #e2e8f0;
+  }
+  .section-icon {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    background: #0ea5e9;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+  .section-number { font-size: 13px; color: #94a3b8; font-weight: 600; }
+
+  /* ── Callouts ── */
+  .callout {
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 16px 0;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .callout-icon { font-size: 18px; flex-shrink: 0; margin-top: 2px; }
+  .callout-body { flex: 1; }
+  .callout-title { font-weight: 700; font-size: 13px; margin-bottom: 4px; }
+  .callout-text { font-size: 13px; line-height: 1.6; }
+  .callout.info { background: #eff6ff; border-left: 4px solid #3b82f6; }
+  .callout.info .callout-title { color: #1d4ed8; }
+  .callout.warn { background: #fffbeb; border-left: 4px solid #f59e0b; }
+  .callout.warn .callout-title { color: #b45309; }
+  .callout.success { background: #f0fdf4; border-left: 4px solid #22c55e; }
+  .callout.success .callout-title { color: #15803d; }
+  .callout.danger { background: #fef2f2; border-left: 4px solid #ef4444; }
+  .callout.danger .callout-title { color: #b91c1c; }
+
+  /* ── Código ── */
+  pre {
+    background: #0f172a;
+    color: #e2e8f0;
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin: 16px 0;
+    overflow-x: auto;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 12.5px;
+    line-height: 1.8;
+  }
+  code {
+    background: #f1f5f9;
+    color: #0f172a;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 12px;
+  }
+  pre code { background: none; color: inherit; padding: 0; }
+  .comment { color: #64748b; }
+  .keyword { color: #93c5fd; }
+  .string { color: #86efac; }
+  .number { color: #fca5a5; }
+
+  /* ── Steps ── */
+  .steps { counter-reset: step-counter; margin: 16px 0; }
+  .step {
+    counter-increment: step-counter;
+    display: flex;
+    gap: 16px;
+    margin: 12px 0;
+    align-items: flex-start;
+  }
+  .step::before {
+    content: counter(step-counter);
+    min-width: 28px; height: 28px;
+    background: #0ea5e9;
+    color: #fff;
+    font-weight: 700;
+    font-size: 13px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .step-body { flex: 1; }
+  .step-title { font-weight: 700; color: #0f172a; }
+  .step-desc { font-size: 13px; color: #475569; margin-top: 2px; }
+
+  /* ── Tabelas ── */
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px; }
+  th { background: #0f172a; color: #f8fafc; padding: 10px 14px; text-align: left; font-weight: 600; }
+  td { padding: 9px 14px; border-bottom: 1px solid #e2e8f0; color: #334155; }
+  tr:nth-child(even) td { background: #f8fafc; }
+
+  /* ── Tela mockup ── */
+  .screen {
+    border: 2px solid #334155;
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 16px 0;
+    background: #0f172a;
+  }
+  .screen-bar {
+    background: #1e293b;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #64748b;
+  }
+  .screen-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .screen-body { padding: 16px 20px; }
+  .field-group { margin: 8px 0; }
+  .field-label { font-size: 11px; color: #64748b; margin-bottom: 3px; }
+  .field-input {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 8px 12px;
+    color: #e2e8f0;
+    font-size: 13px;
+    width: 100%;
+  }
+  .btn-primary {
+    display: inline-block;
+    background: #0ea5e9;
+    color: #fff;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 13px;
+    margin-top: 12px;
+    width: 100%;
+    text-align: center;
+  }
+
+  /* ── Fluxo ── */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 16px 0;
+    font-size: 13px;
+  }
+  .flow-node {
+    background: #1e293b;
+    color: #e2e8f0;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 12px;
+    text-align: center;
+  }
+  .flow-arrow { color: #0ea5e9; font-size: 18px; font-weight: 700; }
+
+  /* ── Badge status ── */
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    margin-right: 4px;
+  }
+  .badge.green { background: #dcfce7; color: #15803d; }
+  .badge.red { background: #fee2e2; color: #b91c1c; }
+  .badge.yellow { background: #fef9c3; color: #a16207; }
+  .badge.blue { background: #dbeafe; color: #1d4ed8; }
+
+  /* ── Print button ── */
+  .print-btn {
+    position: fixed;
+    bottom: 32px; right: 32px;
+    background: #0ea5e9;
+    color: #fff;
+    border: none;
+    padding: 14px 24px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(14,165,233,0.4);
+    z-index: 999;
+  }
+  .print-btn:hover { background: #0284c7; }
+
+  /* ── Rodapé ── */
+  footer {
+    text-align: center;
+    padding: 32px;
+    font-size: 12px;
+    color: #94a3b8;
+    border-top: 1px solid #f1f5f9;
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════
+     CAPA
+════════════════════════════════════════════════════ -->
+<div class="cover">
+  <div class="cover-logo">IMUT</div>
+  <div class="cover-subtitle">Inteligência de Monitoramento em Temperatura e Umidade</div>
+
+  <div class="cover-title">Manual do Usuário</div>
+  <p style="color:#94a3b8;font-size:15px;max-width:480px;">
+    Guia completo para instalação, configuração e operação do sistema de monitoramento IoT com ESP32 e MQTT.
+  </p>
+
+  <div class="cover-badge">Versão 1.0 — Maio 2026</div>
+  <div class="cover-version">Documento confidencial · Para uso interno e dos clientes IMUT</div>
+</div>
+
+<div class="page-break"></div>
+
+<!-- ════════════════════════════════════════════════════
+     ÍNDICE
+════════════════════════════════════════════════════ -->
+<div class="toc">
+  <h2>Sumário</h2>
+  <ol>
+    <li><a href="#sec1">Visão Geral do Sistema</a><span class="dots"></span></li>
+    <li><a href="#sec2">Primeiro Acesso — Login</a><span class="dots"></span></li>
+    <li><a href="#sec3">Dashboard — Painel Principal</a><span class="dots"></span></li>
+    <li><a href="#sec4">Sensores — Gerenciamento de Dispositivos ESP32</a><span class="dots"></span></li>
+    <li><a href="#sec5">Programando o ESP32</a><span class="dots"></span></li>
+    <li><a href="#sec6">Alertas</a><span class="dots"></span></li>
+    <li><a href="#sec7">Relatórios e Exportação de Dados</a><span class="dots"></span></li>
+    <li><a href="#sec8">Perfil e Responsáveis</a><span class="dots"></span></li>
+    <li><a href="#sec9">Assinatura</a><span class="dots"></span></li>
+    <li><a href="#sec10">Perguntas Frequentes (FAQ)</a><span class="dots"></span></li>
+    <li><a href="#sec11">Referência Rápida — Especificações Técnicas</a><span class="dots"></span></li>
+  </ol>
+</div>
+
+<div class="page-break"></div>
+
+<!-- ════════════════════════════════════════════════════
+     1. VISÃO GERAL
+════════════════════════════════════════════════════ -->
+<section id="sec1">
+  <div class="section-header">
+    <div class="section-icon">🌡️</div>
+    <div>
+      <div class="section-number">Capítulo 1</div>
+      <h1>Visão Geral do Sistema</h1>
+    </div>
+  </div>
+
+  <p>O <strong>IMUT</strong> é uma plataforma SaaS de monitoramento contínuo de temperatura e umidade, projetada para ambientes críticos como câmaras frias, laboratórios, estufas e depósitos. Dispositivos ESP32 coletam dados em campo e os enviam em tempo real para a nuvem via protocolo MQTT.</p>
+
+  <h2>Como o sistema funciona</h2>
+
+  <div class="flow">
+    <div class="flow-node">🔌 ESP32<br><small>coleta dados</small></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node">☁️ HiveMQ Cloud<br><small>broker MQTT</small></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node">🖥️ API IMUT<br><small>processa e armazena</small></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node">📱 App IMUT<br><small>visualiza e alerta</small></div>
+  </div>
+
+  <ol>
+    <li>O <strong>ESP32</strong> lê temperatura e umidade do sensor DHT22 e publica os dados via MQTT com TLS.</li>
+    <li>O <strong>HiveMQ Cloud</strong> recebe as mensagens e as encaminha para o serviço de ingestão da IMUT.</li>
+    <li>A <strong>API IMUT</strong> valida as credenciais do dispositivo, salva as leituras e verifica limites configurados.</li>
+    <li>O <strong>App IMUT</strong> exibe gráficos em tempo real, emite alertas por push notification e permite exportar dados.</li>
+  </ol>
+
+  <h2>Componentes necessários</h2>
+
+  <table>
+    <tr><th>Componente</th><th>Descrição</th><th>Onde obter</th></tr>
+    <tr><td>ESP32 (qualquer modelo)</td><td>Microcontrolador com Wi-Fi integrado</td><td>Mercado Livre, AliExpress</td></tr>
+    <tr><td>Sensor DHT22</td><td>Sensor de temperatura (−40°C a 80°C) e umidade (0–100%)</td><td>Mercado Livre, AliExpress</td></tr>
+    <tr><td>Cabo USB-A para Micro USB ou USB-C</td><td>Para programar o ESP32</td><td>Qualquer loja</td></tr>
+    <tr><td>Arduino IDE ou PlatformIO</td><td>Ambiente de desenvolvimento</td><td>arduino.cc (gratuito)</td></tr>
+    <tr><td>Conta IMUT ativa</td><td>Acesso ao painel web/app</td><td>imut.app</td></tr>
+  </table>
+
+  <div class="callout info">
+    <div class="callout-icon">ℹ️</div>
+    <div class="callout-body">
+      <div class="callout-title">Sobre o HiveMQ Cloud</div>
+      <div class="callout-text">O IMUT usa o HiveMQ Cloud como broker MQTT. O plano gratuito suporta até 100 conexões simultâneas e é suficiente para a maioria dos clientes. Você deve criar uma conta gratuita em <strong>console.hivemq.cloud</strong> e configurar os usuários MQTT conforme instruído na seção 4.</div>
+    </div>
+  </div>
+</section>
+
+<div class="page-break"></div>
+
+<!-- ════════════════════════════════════════════════════
+     2. LOGIN
+════════════════════════════════════════════════════ -->
+<section id="sec2">
+  <div class="section-header">
+    <div class="section-icon">🔐</div>
+    <div>
+      <div class="section-number">Capítulo 2</div>
+      <h1>Primeiro Acesso — Login</h1>
+    </div>
+  </div>
+
+  <p>Acesse o aplicativo IMUT pelo navegador ou pelo celular. Na tela inicial, insira suas credenciais de acesso.</p>
+
+  <div class="screen">
+    <div class="screen-bar">
+      <div class="screen-dot" style="background:#ef4444"></div>
+      <div class="screen-dot" style="background:#f59e0b"></div>
+      <div class="screen-dot" style="background:#22c55e"></div>
+      <span>IMUT — Entrar</span>
+    </div>
+    <div class="screen-body">
+      <p style="color:#94a3b8;font-size:12px;margin-bottom:16px;">Monitoramento de temperatura e umidade</p>
+      <div class="field-group">
+        <div class="field-label">E-mail</div>
+        <div class="field-input">admin@suaempresa.com</div>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Senha</div>
+        <div class="field-input">••••••••</div>
+      </div>
+      <div class="btn-primary">Entrar</div>
+    </div>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-body">
+        <div class="step-title">Acesse o endereço do aplicativo</div>
+        <div class="step-desc">Abra o navegador e acesse o endereço fornecido pelo administrador. No celular, instale o APK disponível no link de distribuição.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-body">
+        <div class="step-title">Digite seu e-mail e senha</div>
+        <div class="step-desc">Use as credenciais enviadas pelo administrador da conta. O e-mail padrão inicial é <code>admin@suaempresa.com</code>.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-body">
+        <div class="step-title">Toque em "Entrar"</div>
+        <div class="step-desc">Você será redirecionado ao Dashboard automaticamente.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout warn">
+    <div class="callout-icon">⚠️</div>
+    <div class="callout-body">
+      <div class="callout-title">Erro de conexão</div>
+      <div class="callout-text">Se aparecer "Erro de conexão", verifique se o seu celular está conectado à internet e se o endereço da API está correto. Em ambiente local, a API deve estar em execução na mesma rede.</div>
+    </div>
+  </div>
+
+  <h2>Perfis de acesso</h2>
+  <table>
+    <tr><th>Perfil</th><th>Permissões</th></tr>
+    <tr><td><strong>Proprietário (OWNER)</strong></td><td>Acesso total: cadastra dispositivos, gerencia responsáveis, assina o plano, exporta dados</td></tr>
+    <tr><td><strong>Administrador (ADMIN)</strong></td><td>Cadastra e edita dispositivos, gerencia responsáveis, exporta dados</td></tr>
+    <tr><td><strong>Visualizador (VIEWER)</strong></td><td>Apenas visualiza dashboard, alertas e relatórios — sem edição</td></tr>
+  </table>
+</section>
+
+<div class="page-break"></div>
+
+<!-- ════════════════════════════════════════════════════
+     3. DASHBOARD
+════════════════════════════════════════════════════ -->
+<section id="sec3">
+  <div class="section-header">
+    <div class="section-icon">📊</div>
+    <div>
+      <div class="section-number">Capítulo 3</div>
+      <h1>Dashboard — Painel Principal</h1>
+    </div>
+  </div>
+
+  <p>O Dashboard é a primeira tela exibida após o login. Ele mostra um resumo em tempo real de todos os dispositivos monitorados.</p>
+
+  <h2>Cartões de resumo</h2>
+  <table>
+    <tr><th>Cartão</th><th>O que mostra</th></tr>
+    <tr><td>🌡️ Temperatura Atual</td><td>Última leitura de temperatura do dispositivo mais recente</td></tr>
+    <tr><td>💧 Umidade Atual</td><td>Última leitura de umidade do dispositivo mais recente</td></tr>
+    <tr><td>⚠️ Alertas Abertos</td><td>Quantidade de alertas ainda não reconhecidos</td></tr>
+    <tr><td>🔌 Dispositivos Online</td><td>Quantos ESP32 enviaram dados nas últimas 5 minutos</td></tr>
+  </table>
+
+  <h2>Gráfico de leituras</h2>
+  <p>Abaixo dos cartões há um gráfico de linha exibindo temperatura e umidade das últimas <strong>24 horas</strong> do dispositivo selecionado. As cores são:</p>
+  <ul>
+    <li><strong style="color:#ef4444">Vermelho</strong> — Temperatura (°C)</li>
+    <li><strong style="color:#3b82f6">Azul</strong> — Umidade (%)</li>
+  </ul>
+
+  <div class="callout info">
+    <div class="callout-icon">ℹ️</div>
+    <div class="callout-body">
+      <div class="callout-title">Atualização automática</div>
+      <div class="callout-text">O Dashboard atualiza os dados automaticamente a cada 60 segundos, sem precisar recarregar a página.</div>
+    </div>
+  </div>
+</section>
+
+<div class="page-break"></div>
+
+<!-- ════════════════════════════════════════════════════
+     4. SENSORES
+════════════════════════════════════════════════════ -->
+<section id="sec4">
+  <div class="section-header">
+    <div class="section-icon">📡</div>
+    <div>
+      <div class="section-number">Capítulo 4</div>
+      <h1>Sensores — Gerenciamento de Dispositivos ESP32</h1>
+    </div>
+  </div>
+
+  <p>Na aba <strong>Sensores</strong>, você cadastra, edita, visualiza e remove os dispositivos ESP32 da sua empresa.</p>
+
+  <h2>Cadastrar um novo dispositivo</h2>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-body">
+        <div class="step-title">Toque no botão "Novo"</div>
+        <div class="step-desc">No canto superior direito da tela de Sensores.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-body">
+        <div class="step-title">Preencha os dados do dispositivo</div>
+        <div class="step-desc">Veja a tabela abaixo com a descrição de cada campo.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-body">
+        <div class="step-title">Defina uma senha MQTT forte</div>
+        <div class="step-desc">Esta senha é usada pelo ESP32 para se autenticar no broker. Use no mínimo 12 caracteres com letras maiúsculas, minúsculas, números e símbolos. Exemplo: <code>Cam@raFria#2024!</code></div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-body">
+        <div class="step-title">Toque em "Cadastrar Dispositivo"</div>
+        <div class="step-desc">O sistema gerará automaticamente o <strong>usuário MQTT</strong> e o <strong>tópico</strong>. <span style="color:#b91c1c;font-weight:700;">Anote as credenciais exibidas — elas não serão mostradas novamente.</span></div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-body">
+        <div class="step-title">Configure o HiveMQ Cloud</div>
+        <div class="step-desc">No painel do HiveMQ Cloud, cadastre o usuário e senha MQTT gerados. Veja a seção 5 para o passo a passo completo.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-body">
+        <div class="step-title">Programe o ESP32</div>
+        <div class="step-desc">Use o código da seção 5 com as credenciais geradas. Após o upload, o ESP32 começará a enviar dados automaticamente.</div>
+      </div>
+    </div>
+  </div>
+
+  <h2>Campos do formulário de cadastro</h2>
+  <table>
+    <tr><th>Campo</th><th>Obrigatório</th><th>Descrição</th></tr>
+    <tr><td>Nome</td><td>✅ Sim</td><td>Nome do ambiente monitorado. Ex.: "Câmara Fria 1", "Estufa Norte"</td></tr>
+    <tr><td>Ambiente</td><td>✅ Sim</td><td>Descrição do local. Ex.: "Depósito de Laticínios", "Laboratório B"</td></tr>
+    <tr><td>Número de série</td><td>❌ Não</td><td>Número de série ou patrimônio do ESP32 (para controle interno)</td></tr>
+    <tr><td>Senha MQTT</td><td>✅ Sim</td><td>Senha que o ESP32 usará para se conectar ao broker (mín. 8 caracteres)</td></tr>
+    <tr><td>Temperatura máxima (°C)</td><td>❌ Não</td><td>Limite acima do qual um alerta é gerado. Padrão: 30°C</td></tr>
+    <tr><td>Umidade máxima (%)</td><td>❌ Não</td><td>Limite acima do qual um alerta é gerado. Padrão: 80%</td></tr>
+    <tr><td>Ciclos para alerta</td><td>❌ Não</td><td>Quantas leituras consecutivas acima do limite disparam o alerta. Padrão: 2</td></tr>
+  </table>
+
+  <h2>Credenciais MQTT geradas</h2>
+  <p>Após o cadastro, a tela exibirá um cartão com as credenciais. Guarde-as com segurança:</p>
+
+  <table>
+    <tr><th>Campo</th><th>Exemplo</th><th>Usar em</th></tr>
+    <tr><td>Broker</td><td><code>mqtts://abc.hivemq.cloud:8883</code></td><td>Código do ESP32: <code>mqtt_broker</code></td></tr>
+    <tr><td>Usuário MQTT</td><td><code>cmpld5o8_camara_fri_m7k2z9</code></td><td>Código do ESP32: <code>mqtt_user</code><br>HiveMQ Cloud: campo "Username"</td></tr>
+    <tr><td>Senha MQTT</td><td><code>Cam@raFria#2024!</code></td><td>Código do ESP32: <code>mqtt_password</code><br>HiveMQ Cloud: campo "Password"</td></tr>
+    <tr><td>Tópico</td><td><code>imut/cmpld5o8t/abc123/telemetry</code></td><td>Código do ESP32: <code>mqtt_topic</code></td></tr>
+  </table>
+
+  <div class="callout danger">
+    <div class="callout-icon">🔒</div>
+    <div class="callout-body">
+      <div class="callout-title">Segurança das credenciais</div>
+      <div class="callout-text">A senha MQTT <strong>não é armazenada</strong> no banco de dados do IMUT (somente o hash criptografado). Se você esquecer a senha, será necessário excluir o dispositivo e cadastrá-lo novamente. Recomendamos guardar as credenciais em um gerenciador de senhas.</div>
+    </div>
+  </div>
+
+  <h2>Ações disponíveis na lista de sensores</h2>
+  <table>
+    <tr><th>Ação</th><th>Ícone</th><th>Descrição</th></tr>
+    <tr><td>Visualizar gráfico</td><td>Toque no dispositivo</td><td>Exibe o gráfico de temperatura e umidade das últimas 24h</td></tr>
+    <tr><td>Editar</td><td>✏️ Lápis</td><td>Altera nome, ambiente, limites de alerta</td></tr>
+    <tr><td>Exportar CSV</td><td>📄 CSV</td><td>Baixa arquivo CSV com todas as leituras</td></tr>
+    <tr><td>Exportar Excel</td><td>📊 XLS</td><td>Baixa arquivo Excel com todas as leituras</td></tr>
+    <tr><td>Remover</td><td>🗑️ Lixeira</td><td>Desativa o dispositivo (dados históricos são preservados)</td></tr>
+  </table>
+</section>
+
+<div class="page-break"></div>
+
+<!-- ════════════════════════════════════════════════════
+     5. PROGRAMANDO O ESP32
+════════════════════════════════════════════════════ -->
+<section id="sec5">
+  <div class="section-header">
+    <div class="section-icon">🔧</div>
+    <div>
+      <div class="section-number">Capítulo 5</div>
+      <h1>Programando o ESP32</h1>
+    </div>
+  </div>
+
+  <p>Esta seção mostra como configurar o HiveMQ Cloud e programar o ESP32 para enviar dados ao IMUT.</p>
+
+  <h2>Passo 1 — Configurar o HiveMQ Cloud</h2>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-body">
+        <div class="step-title">Crie uma conta gratuita</div>
+        <div class="step-desc">Acesse <strong>console.hivemq.cloud</strong> e crie uma conta. Clique em "Create Cluster" e escolha o plano gratuito (Serverless).</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-body">
+        <div class="step-title">Acesse Access Management → Credentials</div>
+        <div class="step-desc">No menu lateral do cluster, vá em <strong>Access Management → Credentials</strong>.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-body">
+        <div class="step-title">Adicione o usuário MQTT</div>
+        <div class="step-desc">Clique em "Add Credential". No campo <strong>Username</strong>, cole o usuário gerado pelo IMUT. No campo <strong>Password</strong>, cole a senha que você definiu. Clique em "Save".</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-body">
+        <div class="step-title">Anote o endereço do cluster</div>
+        <div class="step-desc">Na aba "Overview" do cluster, copie o endereço no formato <code>xxxx.s1.eu.hivemq.cloud</code>. Esse é o <strong>broker</strong> que você configurará no ESP32.</div>
+      </div>
+    </div>
+  </div>
+
+  <h2>Passo 2 — Instalar as bibliotecas no Arduino IDE</h2>
+
+  <p>No Arduino IDE, vá em <strong>Ferramentas → Gerenciar Bibliotecas</strong> e instale:</p>
+  <ul>
+    <li><code>DHT sensor library</code> — por Adafruit</li>
+    <li><code>PubSubClient</code> — por Nick O'Leary (cliente MQTT)</li>
+    <li><code>ArduinoJson</code> — por Benoît Blanchon</li>
+    <li><code>WiFiClientSecure</code> — já inclusa na ESP32 Arduino SDK</li>
+  </ul>
+
+  <h2>Passo 3 — Código completo do ESP32</h2>
+
+  <p>Copie o código abaixo e substitua os valores entre <code>/* ... */</code> pelas suas credenciais:</p>
+
+<pre><code><span class="comment">// ════════════════════════════════════════════════════
+//  IMUT — Sensor ESP32 com DHT22 e MQTT over TLS
+//  Substitua as credenciais abaixo pelas geradas no app
+// ════════════════════════════════════════════════════</span>
+
+#include &lt;WiFi.h&gt;
+#include &lt;WiFiClientSecure.h&gt;
+#include &lt;PubSubClient.h&gt;
+#include &lt;DHT.h&gt;
+#include &lt;ArduinoJson.h&gt;
+
+<span class="comment">// ─── Configurações Wi-Fi ───────────────────────────</span>
+<span class="keyword">const char*</span> ssid     = <span class="string">"NOME_DA_SUA_REDE"</span>;
+<span class="keyword">const char*</span> password = <span class="string">"SENHA_DO_WIFI"</span>;
+
+<span class="comment">// ─── Credenciais MQTT (geradas no app IMUT) ────────</span>
+<span class="keyword">const char*</span> mqtt_broker   = <span class="string">"xxxx.s1.eu.hivemq.cloud"</span>; <span class="comment">// sem "mqtts://"</span>
+<span class="keyword">const int</span>   mqtt_port     = <span class="number">8883</span>;                      <span class="comment">// TLS obrigatório</span>
+<span class="keyword">const char*</span> mqtt_user     = <span class="string">"cmpld5o8_camara_fri_m7k2z9"</span>;
+<span class="keyword">const char*</span> mqtt_password = <span class="string">"Cam@raFria#2024!"</span>;
+<span class="keyword">const char*</span> mqtt_topic    = <span class="string">"imut/cmpld5o8t/abc123/telemetry"</span>;
+
+<span class="comment">// ─── Sensor DHT22 ─────────────────────────────────</span>
+<span class="keyword">#define</span> DHT_PIN  <span class="number">4</span>   <span class="comment">// GPIO4 (altere se necessário)</span>
+<span class="keyword">#define</span> DHT_TYPE DHT22
+DHT dht(DHT_PIN, DHT_TYPE);
+
+<span class="comment">// ─── Intervalo de envio (ms) ──────────────────────</span>
+<span class="keyword">const unsigned long</span> SEND_INTERVAL = <span class="number">30000</span>; <span class="comment">// 30 segundos</span>
+
+WiFiClientSecure espClient;
+PubSubClient client(espClient);
+<span class="keyword">unsigned long</span> lastSend = <span class="number">0</span>;
+
+<span class="keyword">void</span> setup() {
+  Serial.begin(<span class="number">115200</span>);
+  dht.begin();
+
+  <span class="comment">// Conecta ao Wi-Fi</span>
+  WiFi.begin(ssid, password);
+  Serial.print(<span class="string">"Conectando ao Wi-Fi"</span>);
+  <span class="keyword">while</span> (WiFi.status() != WL_CONNECTED) {
+    delay(<span class="number">500</span>); Serial.print(<span class="string">"."</span>);
+  }
+  Serial.println(<span class="string">"\nWi-Fi conectado!"</span>);
+
+  <span class="comment">// TLS sem verificar certificado (aceitável para IoT)</span>
+  espClient.setInsecure();
+
+  client.setServer(mqtt_broker, mqtt_port);
+  client.setKeepAlive(<span class="number">60</span>);
+}
+
+<span class="keyword">void</span> reconnect() {
+  <span class="keyword">while</span> (!client.connected()) {
+    Serial.print(<span class="string">"Conectando ao MQTT..."</span>);
+    String clientId = <span class="string">"imut-"</span> + String(random(<span class="number">0xffff</span>), HEX);
+    <span class="keyword">if</span> (client.connect(clientId.c_str(), mqtt_user, mqtt_password)) {
+      Serial.println(<span class="string">" conectado!"</span>);
+    } <span class="keyword">else</span> {
+      Serial.print(<span class="string">" falhou (rc="</span>);
+      Serial.print(client.state());
+      Serial.println(<span class="string">"). Tentando em 5s..."</span>);
+      delay(<span class="number">5000</span>);
+    }
+  }
+}
+
+<span class="keyword">void</span> loop() {
+  <span class="keyword">if</span> (!client.connected()) reconnect();
+  client.loop();
+
+  <span class="keyword">unsigned long</span> now = millis();
+  <span class="keyword">if</span> (now - lastSend >= SEND_INTERVAL) {
+    lastSend = now;
+
+    <span class="keyword">float</span> temp = dht.readTemperature();
+    <span class="keyword">float</span> humi = dht.readHumidity();
+
+    <span class="keyword">if</span> (isnan(temp) || isnan(humi)) {
+      Serial.println(<span class="string">"Erro ao ler DHT22!"</span>);
+      <span class="keyword">return</span>;
+    }
+
+    <span class="comment">// Monta o JSON</span>
+    StaticJsonDocument&lt;<span class="number">128</span>&gt; doc;
+    doc[<span class="string">"temperature"</span>] = temp;
+    doc[<span class="string">"humidity"</span>]    = humi;
+
+    <span class="keyword">char</span> payload[<span class="number">128</span>];
+    serializeJson(doc, payload);
+
+    client.publish(mqtt_topic, payload);
+    Serial.printf(<span class="string">"Enviado: %s\n"</span>, payload);
+  }
+}
+</code></pre>
+
+  <h2>Passo 4 — Selecionar a placa e fazer upload</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-body">
+        <div class="step-title">Selecione a placa ESP32</div>
+        <div class="step-desc">No Arduino IDE: <strong>Ferramentas → Placa → ESP32 Arduino → ESP32 Dev Module</strong></div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-body">
+        <div class="step-title">Selecione a porta COM</div>
+        <div class="step-desc"><strong>Ferramentas → Porta</strong> — escolha a porta onde o ESP32 está conectado.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-body">
+        <div class="step-title">Faça o upload</div>
+        <div class="step-desc">Clique no botão → (Upload). Aguarde a compilação e o envio. Abra o <strong>Monitor Serial</strong> (115200 baud) para ver os logs de conexão.</div>
+      </div>
+    </div>
+  </div>
+
+  <h2>Diagrama de ligação — ESP32 com DHT22</h2>
+  <table>
+    <tr><th>Pino DHT22</th><th>Conectar ao ESP32</th></tr>
+    <tr><td>VCC (pino 1)</td><td>3.3V</td></tr>
+    <tr><td>DATA (pino 2)</td><td>GPIO4 (com resistor 10kΩ para 3.3V)</td></tr>
+    <tr><td>GND (pino 4)</td><td>GND</td></tr>
+  </table>
+
+  <div class="callout success">
+    <div class="callout-icon">✅</div>
+    <div class="callout-body">
+      <div class="callout-title">Como verificar se está funcionando</div>
+      <div class="callout-text">Após o upload, abra o Monitor Serial. Você verá mensagens como <code>Enviado: {"temperature":23.5,"humidity":65.2}</code>. No app IMUT, o dispositivo aparecerá como "Online" e os gráficos serão atualizados em poucos segundos.</div>
+    </div>
+  </div>
+</section>
+
+<div class="page-break"></div>
+
+<!-- ════════════════════════════════════════════════════
+     6. ALERTAS
+════════════════════════════════════════════════════ -->
+<section id="sec6">
+  <div class="section-header">
+    <div class="section-icon">🚨</div>
+    <div>
+      <div class="section-number">Capítulo 6</div>
+      <h1>Alertas</h1>
+    </div>
+  </div>
+
+  <p>O sistema gera alertas automaticamente quando temperatura ou umidade ultrapassam os limites configurados para cada dispositivo.</p>
+
+  <h2>Como os alertas funcionam</h2>
+  <p>O sistema conta leituras consecutivas fora do limite. Somente após atingir o número de ciclos configurado (<strong>padrão: 2 leituras</strong>) o alerta é disparado. Isso evita falsos positivos por picos momentâneos.</p>
+
+  <h2>Status dos alertas</h2>
+  <table>
+    <tr><th>Status</th><th>Significado</th></tr>
+    <tr><td><span class="badge red">ABERTO</span></td><td>Alerta ativo — condição de risco ainda presente ou não reconhecida</td></tr>
+    <tr><td><span class="badge yellow">RECONHECIDO</span></td><td>Um responsável viu o alerta e está tomando providências</td></tr>
+    <tr><td><span class="badge green">RESOLVIDO</span></td><td>A condição voltou ao normal e o alerta foi encerrado automaticamente</td></tr>
+  </table>
+
+  <h2>Reconhecer um alerta</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-body">
+        <div class="step-title">Acesse a aba "Alertas"</div>
+        <div class="step-desc">Toque no ícone de sino na barra inferior.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-body">
+        <div class="step-title">Leia o alerta</div>
+        <div class="step-desc">Veja o dispositivo, o valor medido e o limite configurado.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-body">
+        <div class="step-title">Toque em "Reconhecer"</div>
+        <div class="step-desc">O status muda para RECONHECIDO e a equipe sabe que alguém está cuidando.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout info">
+    <div class="callout-icon">📱</div>
+    <div class="callout-body">
+      <div class="callout-title">Notificações push</div>
+      <div class="callout-text">O app envia uma notificação push no celular sempre que um novo alerta é gerado. Certifique-se de que as notificações do app estão permitidas nas configurações do seu celular.</div>
+    </div>
+  </div>
+</section>
+
+<div class="page-break"></div>
+
+<!-- ════════════════════════════════════════════════════
+     7. RELATÓRIOS E EXPORTAÇÃO
+════════════════════════════════════════════════════ -->
+<section id="sec7">
+  <div class="section-header">
+    <div class="section-icon">📈</div>
+    <div>
+      <div class="section-number">Capítulo 7</div>
+      <h1>Relatórios e Exportação de Dados</h1>
+    </div>
+  </div>
+
+  <h2>Relatório semanal</h2>
+  <p>A aba <strong>Relatórios</strong> exibe um resumo semanal com médias, mínimas e máximas de temperatura e umidade por dispositivo. Ideal para auditorias e controle de qualidade.</p>
+
+  <h2>Exportar dados históricos</h2>
+  <p>Na tela de <strong>Sensores</strong>, selecione um dispositivo e toque nos botões de exportação:</p>
+
+  <table>
+    <tr><th>Formato</th><th>Uso recomendado</th></tr>
+    <tr><td><strong>CSV</strong></td><td>Importar em qualquer planilha (Excel, Google Sheets, LibreOffice)</td></tr>
+    <tr><td><strong>Excel (XLS)</strong></td><td>Abrir diretamente no Microsoft Excel com formatação</td></tr>
+  </table>
+
+  <p>O arquivo gerado contém as colunas:</p>
+  <ul>
+    <li><strong>Data/Hora</strong> — no fuso horário de Brasília (GMT-3)</li>
+    <li><strong>Temperatura (°C)</strong></li>
+    <li><strong>Umidade (%)</strong></li>
+    <li><strong>Bateria (%)</strong> — quando disponível</li>
+    <li><strong>Ambiente</strong></li>
+  </ul>
+
+  <div class="callout info">
+    <div class="callout-icon">📅</div>
+    <div class="callout-body">
+      <div class="callout-title">Período dos dados exportados</div>
+      <div class="callout-text">Por padrão, o sistema exporta os dados das últimas <strong>168 horas (7 dias)</strong>. O histórico máximo exportável é de 1 ano. Para relatórios mais longos, entre em contato com o suporte.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════
+     8. PERFIL E RESPONSÁVEIS
+════════════════════════════════════════════════════ -->
+<section id="sec8">
+  <div class="section-header">
+    <div class="section-icon">👥</div>
+    <div>
+      <div class="section-number">Capítulo 8</div>
+      <h1>Perfil e Responsáveis</h1>
+    </div>
+  </div>
+
+  <p>A aba <strong>Perfil</strong> exibe os dados do usuário logado, da empresa e da equipe de responsáveis.</p>
+
+  <h2>Dados exibidos</h2>
+  <ul>
+    <li><strong>Usuário:</strong> nome, e-mail, telefone e perfil de acesso</li>
+    <li><strong>Empresa:</strong> nome, identificador (slug) e status da assinatura</li>
+    <li><strong>Responsáveis:</strong> lista completa com nome, e-mail e perfil de cada membro</li>
+  </ul>
+
+  <h2>Adicionar um responsável</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-body">
+        <div class="step-title">Toque em "Adicionar"</div>
+        <div class="step-desc">No bloco "Responsáveis", no canto direito (disponível para Proprietário e Administrador).</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-body">
+        <div class="step-title">Preencha os dados</div>
+        <div class="step-desc">Nome, e-mail (obrigatório), telefone (opcional) e perfil de acesso.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-body">
+        <div class="step-title">Escolha o perfil</div>
+        <div class="step-desc"><strong>Visualizador</strong> — apenas leitura. <strong>Administrador</strong> — pode cadastrar e editar dispositivos.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-body">
+        <div class="step-title">Toque em "Adicionar"</div>
+        <div class="step-desc">O responsável aparecerá na lista. O limite é de <strong>5 responsáveis</strong> por empresa.</div>
+      </div>
+    </div>
+  </div>
+
+  <h2>Remover um responsável</h2>
+  <p>Toque no ícone de lixeira ao lado do nome do responsável e confirme a remoção. O responsável perderá o acesso imediatamente.</p>
+
+  <h2>Sair da conta</h2>
+  <p>No final da tela de Perfil, toque em <strong>"Sair da conta"</strong> (vermelho). Você será redirecionado à tela de login.</p>
+</section>
+
+<div class="page-break"></div>
+
+<!-- ════════════════════════════════════════════════════
+     9. ASSINATURA
+════════════════════════════════════════════════════ -->
+<section id="sec9">
+  <div class="section-header">
+    <div class="section-icon">💳</div>
+    <div>
+      <div class="section-number">Capítulo 9</div>
+      <h1>Assinatura</h1>
+    </div>
+  </div>
+
+  <p>O IMUT opera no modelo de assinatura mensal. O acesso a todos os recursos (cadastro de dispositivos, alertas, exportação) requer uma assinatura <span class="badge green">ATIVA</span>.</p>
+
+  <h2>Status da assinatura</h2>
+  <table>
+    <tr><th>Status</th><th>Significado</th></tr>
+    <tr><td><span class="badge green">ACTIVE</span></td><td>Assinatura ativa — acesso completo</td></tr>
+    <tr><td><span class="badge blue">TRIALING</span></td><td>Período de teste gratuito em andamento</td></tr>
+    <tr><td><span class="badge yellow">INCOMPLETE</span></td><td>Pagamento pendente — acesso limitado</td></tr>
+    <tr><td><span class="badge red">CANCELED</span></td><td>Assinatura cancelada — apenas leitura do histórico</td></tr>
+  </table>
+
+  <h2>Assinar ou gerenciar</h2>
+  <p>Somente o <strong>Proprietário (OWNER)</strong> pode gerenciar a assinatura. Na tela de Perfil, toque em <strong>"Gerenciar assinatura"</strong>. Você será redirecionado ao portal seguro do Stripe para:</p>
+  <ul>
+    <li>Assinar o plano mensal</li>
+    <li>Atualizar dados de pagamento</li>
+    <li>Baixar notas fiscais</li>
+    <li>Cancelar a assinatura</li>
+  </ul>
+</section>
+
+<!-- ════════════════════════════════════════════════════
+     10. FAQ
+════════════════════════════════════════════════════ -->
+<section id="sec10">
+  <div class="section-header">
+    <div class="section-icon">❓</div>
+    <div>
+      <div class="section-number">Capítulo 10</div>
+      <h1>Perguntas Frequentes</h1>
+    </div>
+  </div>
+
+  <h3>O ESP32 não aparece como "Online" no dashboard. O que fazer?</h3>
+  <p>Verifique no Monitor Serial do Arduino IDE se o ESP32 está conectado ao Wi-Fi e ao MQTT. Mensagens de erro comuns:</p>
+  <ul>
+    <li><code>rc=-2</code> — não consegue resolver o endereço do broker. Verifique o campo <code>mqtt_broker</code>.</li>
+    <li><code>rc=-4</code> — timeout de conexão. Verifique a porta (8883) e se o Wi-Fi está estável.</li>
+    <li><code>rc=5</code> — credenciais inválidas. Verifique usuário e senha no HiveMQ Cloud.</li>
+  </ul>
+
+  <h3>Esqueci a senha MQTT do dispositivo. Como recuperar?</h3>
+  <p>A senha MQTT não pode ser recuperada — ela não é armazenada no banco. Você deve remover o dispositivo no app e cadastrá-lo novamente com uma nova senha. Lembre-se de atualizar também o código no ESP32 e as credenciais no HiveMQ Cloud.</p>
+
+  <h3>Quantos dispositivos posso cadastrar?</h3>
+  <p>O limite padrão é de <strong>10 dispositivos por empresa</strong>. Entre em contato com o suporte para aumentar o limite.</p>
+
+  <h3>Os dados são salvos mesmo quando o app está fechado?</h3>
+  <p>Sim. O ESP32 envia os dados para o broker HiveMQ Cloud, que os entrega ao servidor IMUT independentemente do app estar aberto. O app apenas visualiza os dados já armazenados.</p>
+
+  <h3>Com que frequência os dados são enviados?</h3>
+  <p>Pelo código de exemplo, a cada <strong>30 segundos</strong>. Você pode alterar o valor de <code>SEND_INTERVAL</code> no código para intervalos menores (mínimo 5 segundos recomendado) ou maiores para economizar bateria.</p>
+
+  <h3>O sistema funciona sem internet?</h3>
+  <p>Não. O ESP32 precisa de Wi-Fi para enviar dados ao broker MQTT. Sem conexão, os dados são perdidos. Se precisar de armazenamento offline, entre em contato com o suporte técnico.</p>
+
+  <h3>Posso usar outro sensor além do DHT22?</h3>
+  <p>Sim. O sistema aceita qualquer sensor que envie JSON com os campos <code>temperature</code> e <code>humidity</code>. Sensores compatíveis: DHT11, SHT31, AM2302, BME280. Para o BME280, adicione também o campo <code>pressure</code> (opcional).</p>
+
+  <h3>Como recebo as notificações de alerta no celular?</h3>
+  <p>Após instalar o app, ele solicitará permissão para enviar notificações. Aceite a solicitação. As notificações chegam automaticamente quando um novo alerta é gerado.</p>
+</section>
+
+<div class="page-break"></div>
+
+<!-- ════════════════════════════════════════════════════
+     11. ESPECIFICAÇÕES TÉCNICAS
+════════════════════════════════════════════════════ -->
+<section id="sec11">
+  <div class="section-header">
+    <div class="section-icon">⚙️</div>
+    <div>
+      <div class="section-number">Capítulo 11</div>
+      <h1>Referência Rápida — Especificações Técnicas</h1>
+    </div>
+  </div>
+
+  <h2>Limites do sistema</h2>
+  <table>
+    <tr><th>Recurso</th><th>Limite</th></tr>
+    <tr><td>Dispositivos por empresa</td><td>10</td></tr>
+    <tr><td>Responsáveis por empresa</td><td>5</td></tr>
+    <tr><td>Histórico exportável</td><td>1 ano</td></tr>
+    <tr><td>Intervalo mínimo de leitura</td><td>5 segundos</td></tr>
+    <tr><td>Conexões MQTT simultâneas (plano free HiveMQ)</td><td>100</td></tr>
+  </table>
+
+  <h2>Formato do payload MQTT</h2>
+  <pre><code><span class="comment">// Campos obrigatórios</span>
+{
+  <span class="string">"temperature"</span>: <span class="number">23.5</span>,   <span class="comment">// em graus Celsius (float)</span>
+  <span class="string">"humidity"</span>: <span class="number">65.2</span>        <span class="comment">// em percentual (float)</span>
+}
+
+<span class="comment">// Campos opcionais</span>
+{
+  <span class="string">"temperature"</span>: <span class="number">23.5</span>,
+  <span class="string">"humidity"</span>: <span class="number">65.2</span>,
+  <span class="string">"battery"</span>: <span class="number">87</span>,          <span class="comment">// nível de bateria em % (integer)</span>
+  <span class="string">"rssi"</span>: <span class="number">-62</span>             <span class="comment">// intensidade do Wi-Fi em dBm (integer)</span>
+}</code></pre>
+
+  <h2>Estrutura do tópico MQTT</h2>
+  <pre><code>imut/{companyId}/{deviceId}/telemetry
+
+<span class="comment">Exemplo:</span>
+imut/cmpld5o8t001kpv6sb641n17k/abc123def456/telemetry</code></pre>
+
+  <h2>Conexão MQTT — parâmetros</h2>
+  <table>
+    <tr><th>Parâmetro</th><th>Valor</th></tr>
+    <tr><td>Protocolo</td><td>MQTT over TLS (mqtts://)</td></tr>
+    <tr><td>Porta</td><td>8883</td></tr>
+    <tr><td>TLS</td><td>Obrigatório</td></tr>
+    <tr><td>QoS</td><td>0 (at most once)</td></tr>
+    <tr><td>Keep-alive</td><td>60 segundos</td></tr>
+    <tr><td>Client ID</td><td>Qualquer string única</td></tr>
+  </table>
+
+  <h2>Suporte técnico</h2>
+  <p>Em caso de dúvidas ou problemas, entre em contato:</p>
+  <ul>
+    <li>📧 E-mail: <strong>suporte@imut.app</strong></li>
+    <li>📱 WhatsApp: disponível para clientes com plano ativo</li>
+    <li>🐞 Bugs: abra uma issue em <strong>github.com/sepiemtec-commits/IMUT</strong></li>
+  </ul>
+</section>
+
+<!-- ════════════════════════════════════════════════════
+     RODAPÉ
+════════════════════════════════════════════════════ -->
+<footer>
+  <strong>IMUT</strong> — Inteligência de Monitoramento em Temperatura e Umidade<br>
+  Manual do Usuário v1.0 · Maio 2026 · Documento gerado automaticamente
+</footer>
+
+<!-- Botão de impressão -->
+<button class="print-btn no-print" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
+
+</body>
+</html>
