@@ -164,6 +164,64 @@ export function useDeleteDevice() {
   });
 }
 
+export function useResponsibles() {
+  const token = useAuthStore((s) => s.accessToken)!;
+  const companyId = useAuthStore((s) => s.company?.id)!;
+  return useQuery({
+    queryKey: ["responsibles", companyId] as const,
+    queryFn: () =>
+      apiFetch<{
+        responsibles: {
+          id: string;
+          name: string;
+          email: string;
+          phone?: string | null;
+          role: string;
+          createdAt: string;
+        }[];
+        limit: number;
+        count: number;
+      }>(`/organizations/${companyId}/responsibles`, { token }),
+    enabled: Boolean(token && companyId),
+  });
+}
+
+export function useAddResponsible() {
+  const token = useAuthStore((s) => s.accessToken)!;
+  const companyId = useAuthStore((s) => s.company?.id)!;
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: {
+      name: string;
+      email: string;
+      phone?: string;
+      role: "ADMIN" | "VIEWER";
+    }) =>
+      apiFetch(`/organizations/${companyId}/responsibles`, {
+        method: "POST",
+        token,
+        body: JSON.stringify(payload),
+      }),
+    onSuccess: () =>
+      void qc.invalidateQueries({ queryKey: ["responsibles", companyId] }),
+  });
+}
+
+export function useRemoveResponsible() {
+  const token = useAuthStore((s) => s.accessToken)!;
+  const companyId = useAuthStore((s) => s.company?.id)!;
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      apiFetch(`/organizations/${companyId}/responsibles/${id}`, {
+        method: "DELETE",
+        token,
+      }),
+    onSuccess: () =>
+      void qc.invalidateQueries({ queryKey: ["responsibles", companyId] }),
+  });
+}
+
 export function useAcknowledgeAlert() {
   const token = useAuthStore((s) => s.accessToken)!;
   const qc = useQueryClient();
