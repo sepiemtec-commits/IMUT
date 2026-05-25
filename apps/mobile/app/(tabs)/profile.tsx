@@ -13,10 +13,19 @@ function InfoRow({ label, value }: { label: string; value?: string | null }) {
   );
 }
 
+const ROLE_LABEL: Record<string, string> = {
+  OWNER: "Proprietário",
+  ADMIN: "Administrador",
+  RESPONSIBLE: "Responsável",
+};
+
 export default function ProfileScreen() {
   const logout = useAuthStore((s) => s.logout);
-  const token = useAuthStore((s) => s.accessToken);
-  const { data: me, isLoading } = useMe();
+  const storeUser = useAuthStore((s) => s.user);
+  const storeCompany = useAuthStore((s) => s.company);
+  const subscriptionStatus = useAuthStore((s) => s.subscriptionStatus);
+
+  const { data: me, isLoading: meLoading } = useMe();
   const { data: billing } = useBillingStatus();
 
   const handleLogout = async () => {
@@ -24,16 +33,20 @@ export default function ProfileScreen() {
     router.replace("/login");
   };
 
-  if (isLoading || !token) {
-    return (
-      <View className="flex-1 items-center justify-center bg-imut-surface">
-        <ActivityIndicator color="#0ea5e9" />
-      </View>
-    );
-  }
-
-  const subStatus = me?.subscription?.status ?? billing?.subscription?.status;
+  // Usa dados do store imediatamente; enriquece com /auth/me quando disponível
+  const userName = me?.user?.name ?? storeUser?.name;
+  const userEmail = me?.user?.email ?? storeUser?.email;
+  const userPhone = me?.user?.phone;
+  const role = me?.role ?? storeUser?.role;
+  const companyName = me?.company?.name ?? storeCompany?.name;
+  const companySlug = me?.company?.slug;
+  const subStatus =
+    me?.subscription?.status ??
+    billing?.subscription?.status ??
+    subscriptionStatus ??
+    "—";
   const subEnd = me?.subscription?.currentPeriodEnd;
+  const isOwner = role === "OWNER";
 
   return (
     <View className="flex-1 bg-imut-surface px-4 pt-4">
@@ -44,13 +57,16 @@ export default function ProfileScreen() {
             <Ionicons name="person" size={28} color="#0ea5e9" />
           </View>
           <View className="flex-1">
-            <Text className="text-lg font-bold text-white">{me?.user?.name}</Text>
-            <Text className="text-sm text-slate-400">{me?.user?.email}</Text>
+            <Text className="text-lg font-bold text-white">
+              {userName ?? "Carregando..."}
+            </Text>
+            <Text className="text-sm text-slate-400">{userEmail}</Text>
           </View>
+          {meLoading && <ActivityIndicator size="small" color="#0ea5e9" />}
         </View>
         <View className="border-t border-slate-700 pt-2">
-          <InfoRow label="Papel" value={me?.role} />
-          {me?.user?.phone && <InfoRow label="Telefone" value={me.user.phone} />}
+          <InfoRow label="Papel" value={role ? (ROLE_LABEL[role] ?? role) : undefined} />
+          {userPhone ? <InfoRow label="Telefone" value={userPhone} /> : null}
         </View>
       </View>
 
@@ -62,30 +78,25 @@ export default function ProfileScreen() {
             Empresa
           </Text>
         </View>
-        <InfoRow label="Nome" value={me?.company?.name} />
-        <InfoRow label="Slug" value={me?.company?.slug} />
-        <InfoRow
-          label="Assinatura"
-          value={subStatus}
-        />
-        {subEnd && (
+        <InfoRow label="Nome" value={companyName} />
+        {companySlug ? <InfoRow label="Slug" value={companySlug} /> : null}
+        <InfoRow label="Assinatura" value={subStatus} />
+        {subEnd ? (
           <InfoRow
             label="Válida até"
             value={new Date(subEnd).toLocaleDateString("pt-BR")}
           />
-        )}
-        <InfoRow
-          label="Responsáveis"
-          value={
-            me?.limits
-              ? `${me.limits.responsiblesUsed} / ${me.limits.maxResponsibles}`
-              : undefined
-          }
-        />
+        ) : null}
+        {me?.limits ? (
+          <InfoRow
+            label="Responsáveis"
+            value={`${me.limits.responsiblesUsed} / ${me.limits.maxResponsibles}`}
+          />
+        ) : null}
       </View>
 
       {/* Ações */}
-      {me?.role === "OWNER" && (
+      {isOwner && (
         <Pressable
           onPress={() => router.push("/subscription")}
           className="mt-4 flex-row items-center justify-between rounded-xl border border-imut-primary/40 bg-slate-800/80 p-4"
