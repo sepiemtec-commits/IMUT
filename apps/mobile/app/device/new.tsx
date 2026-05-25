@@ -105,12 +105,10 @@ export default function NewDeviceScreen() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <ScrollView className="px-4 pt-4" keyboardShouldPersistTaps="handled">
-        {/* Header */}
-        <View className="mb-6 flex-row items-center gap-3">
-          <Pressable onPress={() => router.back()} hitSlop={8}>
-            <Ionicons name="arrow-back" size={24} color="#94a3b8" />
-          </Pressable>
-          <Text className="text-xl font-bold text-white">Novo dispositivo ESP32</Text>
+        <View className="mb-4">
+          <Text className="text-slate-400">
+            Preencha os dados abaixo para registrar um ESP32 no sistema.
+          </Text>
         </View>
 
         {/* Identificação */}

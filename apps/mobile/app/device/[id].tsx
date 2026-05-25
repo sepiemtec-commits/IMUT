@@ -142,14 +142,8 @@ export default function EditDeviceScreen() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <ScrollView className="px-4 pt-4" keyboardShouldPersistTaps="handled">
-        {/* Header */}
-        <View className="mb-6 flex-row items-center gap-3">
-          <Pressable onPress={() => router.back()} hitSlop={8}>
-            <Ionicons name="arrow-back" size={24} color="#94a3b8" />
-          </Pressable>
-          <Text className="flex-1 text-xl font-bold text-white" numberOfLines={1}>
-            {device.name}
-          </Text>
+        <View className="mb-4">
+          <Text className="text-slate-400">{device.environment}</Text>
         </View>
 
         {/* MQTT Info (readonly) */}

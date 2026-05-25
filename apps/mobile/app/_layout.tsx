@@ -1,8 +1,9 @@
 import "../global.css";
 import { useEffect } from "react";
-import { Stack } from "expo-router";
+import { router, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { ActivityIndicator, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { QueryProvider } from "../providers/QueryProvider";
 import { useAuthStore } from "../store/auth.store";
 
@@ -39,15 +40,32 @@ export default function RootLayout() {
         screenOptions={{
           headerStyle: { backgroundColor: "#0f172a" },
           headerTintColor: "#f8fafc",
+          headerBackTitle: "Voltar",
           contentStyle: { backgroundColor: "#0f172a" },
         }}
       >
         <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="login" options={{ title: "Entrar" }} />
+        <Stack.Screen name="login" options={{ title: "Entrar", headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen
           name="subscription"
-          options={{ title: "Assinatura", presentation: "modal" }}
+          options={{
+            title: "Assinatura",
+            presentation: "modal",
+            headerRight: () => (
+              <Pressable onPress={() => router.back()} hitSlop={8}>
+                <Ionicons name="close" size={24} color="#94a3b8" />
+              </Pressable>
+            ),
+          }}
+        />
+        <Stack.Screen
+          name="device/new"
+          options={{ title: "Novo Dispositivo" }}
+        />
+        <Stack.Screen
+          name="device/[id]"
+          options={{ title: "Configurar Dispositivo" }}
         />
       </Stack>
     </QueryProvider>
