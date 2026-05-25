@@ -195,7 +195,7 @@ export default function ProfileScreen() {
   const count = resp?.count ?? 0;
 
   return (
-    <ScrollView className="flex-1 bg-imut-surface" contentContainerClassName="px-4 pt-4 pb-10">
+    <ScrollView className="flex-1 bg-imut-surface" contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 40 }}>
       {/* Usuário */}
       <View className="rounded-xl border border-slate-700 bg-slate-800/80 p-4">
         <View className="mb-3 flex-row items-center gap-3">

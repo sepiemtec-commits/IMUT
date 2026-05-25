@@ -1,23 +1,16 @@
 import { Redirect, Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { ActivityIndicator, View } from "react-native";
 import { useAuthStore } from "../../store/auth.store";
 import { useBillingStatus } from "../../hooks/queries";
 
 export default function TabsLayout() {
   const isAuth = useAuthStore((s) => s.isAuthenticated());
-  const { data: billing, isLoading } = useBillingStatus();
+  // Nunca desmonta o <Tabs> — verificamos apenas no primeiro carregamento
+  // para evitar reset da navegação para o primeiro tab (Dashboard)
+  const { data: billing } = useBillingStatus();
 
   if (!isAuth) {
     return <Redirect href="/login" />;
-  }
-
-  if (isLoading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-imut-surface">
-        <ActivityIndicator color="#0ea5e9" />
-      </View>
-    );
   }
 
   if (billing?.requiresPayment) {
