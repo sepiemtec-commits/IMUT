@@ -1,5 +1,10 @@
 pluginManagement {
-  // Resolve o caminho do node: tenta o PATH e depois locais comuns do nvm
+  // Lê local.properties para pegar NODE_PATH definido pelo usuário
+  def localProps = new Properties()
+  def localPropsFile = new File(rootDir, "local.properties")
+  if (localPropsFile.exists()) localPropsFile.withInputStream { localProps.load(it) }
+
+  // Resolve o caminho do node: local.properties > env var > locais comuns do nvm
   def nodeCmd = { ->
     def candidates = [
       "node",
@@ -15,9 +20,9 @@ pluginManagement {
         if (result.exitValue() == 0) return c
       } catch (ignored) {}
     }
-    throw new GradleException("Node.js não encontrado. Instale-o ou defina NODE_PATH em local.properties.")
+    throw new GradleException("Node.js não encontrado. Defina NODE_PATH em local.properties.")
   }
-  def node = System.getenv("NODE_PATH") ?: nodeCmd()
+  def node = localProps.getProperty("NODE_PATH")?.trim() ?: System.getenv("NODE_PATH") ?: nodeCmd()
 
   def reactNativeGradlePlugin = new File(
     providers.exec {
