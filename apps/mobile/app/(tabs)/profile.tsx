@@ -154,13 +154,26 @@ export default function ProfileScreen() {
 
   const { data: me, isLoading: meLoading } = useMe();
   const { data: billing } = useBillingStatus();
-  const { data: resp, isLoading: respLoading } = useResponsibles();
+  const { data: resp, isLoading: respLoading, refetch: refetchResp } = useResponsibles();
   const addResp = useAddResponsible();
   const removeResp = useRemoveResponsible();
 
   const handleLogout = async () => {
     await logout();
     router.replace("/login");
+  };
+
+  const handleAdd = (data: { name: string; email: string; phone?: string; role: "ADMIN" | "VIEWER" }) => {
+    addResp.mutate(data, {
+      onSuccess: () => {
+        setShowAdd(false);
+        void refetchResp();
+      },
+      onError: (err) => {
+        const msg = err instanceof Error ? err.message : "Erro ao adicionar responsável.";
+        Alert.alert("Erro", msg);
+      },
+    });
   };
 
   const handleRemove = (id: string, name: string) => {
@@ -172,7 +185,14 @@ export default function ProfileScreen() {
         {
           text: "Remover",
           style: "destructive",
-          onPress: () => removeResp.mutate(id),
+          onPress: () =>
+            removeResp.mutate(id, {
+              onSuccess: () => void refetchResp(),
+              onError: (err) => {
+                const msg = err instanceof Error ? err.message : "Erro ao remover responsável.";
+                Alert.alert("Erro", msg);
+              },
+            }),
         },
       ],
     );
@@ -190,7 +210,8 @@ export default function ProfileScreen() {
     "—";
   const subEnd = me?.subscription?.currentPeriodEnd;
   const isOwner = role === "OWNER";
-  const canManage = role === "OWNER" || role === "ADMIN";
+  const canAdd = role === "OWNER" || role === "ADMIN";
+  const canDelete = role === "OWNER";
   const limit = resp?.limit ?? 5;
   const count = resp?.count ?? 0;
 
@@ -245,7 +266,7 @@ export default function ProfileScreen() {
               <Text className="text-xs text-slate-300">{count}/{limit}</Text>
             </View>
           </View>
-          {canManage && count < limit && (
+          {canAdd && count < limit && (
             <Pressable
               onPress={() => setShowAdd(true)}
               className="flex-row items-center gap-1 rounded-lg bg-imut-primary/20 px-3 py-1.5"
@@ -263,7 +284,7 @@ export default function ProfileScreen() {
             <Ionicons name="person-add-outline" size={32} color="#475569" />
             <Text className="mt-2 text-center text-sm text-slate-500">
               Nenhum responsável cadastrado.{"\n"}
-              {canManage ? "Use o botão Adicionar para incluir membros." : ""}
+              {canAdd ? "Use o botão Adicionar para incluir membros." : ""}
             </Text>
           </View>
         ) : (
@@ -280,7 +301,7 @@ export default function ProfileScreen() {
                   <Text className="text-xs text-slate-300">{ROLE_LABEL[r.role] ?? r.role}</Text>
                 </View>
               </View>
-              {canManage && (
+              {canDelete && (
                 <Pressable
                   onPress={() => handleRemove(r.id, r.name)}
                   hitSlop={8}
@@ -325,9 +346,7 @@ export default function ProfileScreen() {
         visible={showAdd}
         onClose={() => setShowAdd(false)}
         loading={addResp.isPending}
-        onAdd={(data) =>
-          addResp.mutate(data, { onSuccess: () => setShowAdd(false) })
-        }
+        onAdd={handleAdd}
       />
     </ScrollView>
   );
