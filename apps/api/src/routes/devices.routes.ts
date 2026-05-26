@@ -162,6 +162,27 @@ devicesRouter.delete("/:id", requirePermission("devices:write"), asyncHandler(as
   res.status(204).send();
 }));
 
+// ── Sanitização contra CSV Injection (fórmulas =, +, -, @, \t, \r)
+function sanitizeCsvField(value: string): string {
+  const dangerous = /^[=+\-@\t\r]/;
+  const sanitized = dangerous.test(value) ? `'${value}` : value;
+  // Envolve em aspas se contiver vírgula, aspas ou quebra de linha
+  if (/[",\n\r]/.test(sanitized)) {
+    return `"${sanitized.replace(/"/g, '""')}"`;
+  }
+  return sanitized;
+}
+
+// ── Escapa caracteres especiais XML para prevenir XML/XSS Injection
+function escapeXml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
 // GET /devices/:id/readings/export?format=csv&hours=168
 devicesRouter.get("/:id/readings/export", requirePermission("devices:read"), asyncHandler(async (req, res) => {
   const companyId = req.user!.companyId;
@@ -178,26 +199,25 @@ devicesRouter.get("/:id/readings/export", requirePermission("devices:read"), asy
     select: { recordedAt: true, temperature: true, humidity: true, battery: true, environment: true },
   });
 
-  const header = "Data/Hora,Temperatura (°C),Umidade (%),Bateria (%),Ambiente";
-  const rows = readings.map((r) =>
-    [
-      new Date(r.recordedAt).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }),
-      r.temperature.toFixed(2),
-      r.humidity.toFixed(2),
-      r.battery != null ? r.battery.toString() : "",
-      r.environment,
-    ].join(","),
-  );
-
-  const csv = [header, ...rows].join("\n");
   const filename = `${device.name.replace(/[^a-zA-Z0-9]/g, "_")}_${new Date().toISOString().slice(0, 10)}`;
 
   if (format === "csv") {
+    const header = "Data/Hora,Temperatura (°C),Umidade (%),Bateria (%),Ambiente";
+    const rows = readings.map((r) =>
+      [
+        new Date(r.recordedAt).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }),
+        r.temperature.toFixed(2),
+        r.humidity.toFixed(2),
+        r.battery != null ? r.battery.toString() : "",
+        sanitizeCsvField(r.environment), // ← protege contra CSV Injection
+      ].join(","),
+    );
+
     res.setHeader("Content-Type", "text/csv; charset=utf-8");
     res.setHeader("Content-Disposition", `attachment; filename="${filename}.csv"`);
-    res.send("\uFEFF" + csv); // BOM para Excel reconhecer UTF-8
+    res.send("\uFEFF" + [header, ...rows].join("\n")); // BOM para Excel reconhecer UTF-8
   } else {
-    // XLSX simples via XML (SpreadsheetML — compatível sem biblioteca)
+    // XLSX via XML (SpreadsheetML) — com escape de entidades XML
     const xmlRows = [
       `<Row>
         <Cell><Data ss:Type="String">Data/Hora</Data></Cell>
@@ -207,11 +227,11 @@ devicesRouter.get("/:id/readings/export", requirePermission("devices:read"), asy
         <Cell><Data ss:Type="String">Ambiente</Data></Cell>
       </Row>`,
       ...readings.map((r) => `<Row>
-        <Cell><Data ss:Type="String">${new Date(r.recordedAt).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}</Data></Cell>
+        <Cell><Data ss:Type="String">${escapeXml(new Date(r.recordedAt).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }))}</Data></Cell>
         <Cell><Data ss:Type="Number">${r.temperature.toFixed(2)}</Data></Cell>
         <Cell><Data ss:Type="Number">${r.humidity.toFixed(2)}</Data></Cell>
         <Cell><Data ss:Type="${r.battery != null ? "Number" : "String"}">${r.battery != null ? r.battery : ""}</Data></Cell>
-        <Cell><Data ss:Type="String">${r.environment}</Data></Cell>
+        <Cell><Data ss:Type="String">${escapeXml(r.environment)}</Data></Cell>
       </Row>`),
     ].join("\n");
 
