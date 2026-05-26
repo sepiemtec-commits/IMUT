@@ -9,13 +9,13 @@ export interface TokenPair {
 
 export function signAccessToken(payload: JwtPayload): string {
   return jwt.sign(payload, env.JWT_ACCESS_SECRET, {
-    expiresIn: env.JWT_ACCESS_EXPIRES_IN,
+    expiresIn: env.JWT_ACCESS_EXPIRES_IN as `${number}${"s" | "m" | "h" | "d"}`,
   });
 }
 
 export function signRefreshToken(userId: string): string {
   return jwt.sign({ sub: userId }, env.JWT_REFRESH_SECRET, {
-    expiresIn: env.JWT_REFRESH_EXPIRES_IN,
+    expiresIn: env.JWT_REFRESH_EXPIRES_IN as `${number}${"s" | "m" | "h" | "d"}`,
   });
 }
 

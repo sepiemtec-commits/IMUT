@@ -19,7 +19,7 @@ organizationsRouter.get(
   requirePermission("dashboard:read"),
   asyncHandler(async (req, res) => {
     const company = await prisma.company.findUnique({
-      where: { id: req.params.orgId },
+      where: { id: (req.params.orgId as string) },
       include: {
         subscription: true,
         _count: { select: { devices: true, responsibles: true } },

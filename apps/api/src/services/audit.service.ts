@@ -40,7 +40,8 @@ export async function recordAudit(entry: AuditEntry): Promise<void> {
         userAgent: entry.userAgent,
         statusCode: entry.statusCode,
         success: entry.success ?? true,
-        metadata: entry.metadata ?? undefined,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        metadata: (entry.metadata ?? undefined) as any,
       },
     });
   } catch (err) {

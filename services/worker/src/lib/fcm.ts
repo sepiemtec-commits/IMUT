@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import admin from "firebase-admin";
-import type { Message } from "firebase-admin/messaging";
+import type { MulticastMessage } from "firebase-admin/messaging";
 import { env, isFcmConfigured } from "../config/env.js";
 import pino from "pino";
 
@@ -77,7 +77,7 @@ export async function sendAlertPush(
   const batchSize = 500;
   for (let i = 0; i < payload.tokens.length; i += batchSize) {
     const chunk = payload.tokens.slice(i, i + batchSize);
-    const message: Message = {
+    const message: MulticastMessage = {
       notification: {
         title: payload.title,
         body: `Ambiente: ${payload.environment}`,

@@ -2,6 +2,7 @@ import {
   LIMITS,
   parseTelemetryPayload,
   telemetryTimestampToDate,
+  type Esp32Telemetry,
 } from "@imut/shared";
 import { DeviceStatus, SubscriptionStatus } from "@prisma/client";
 import { prisma } from "../lib/prisma.js";

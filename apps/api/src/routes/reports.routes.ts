@@ -41,7 +41,7 @@ reportsRouter.get("/weekly", requirePermission("reports:read"), asyncHandler(asy
 reportsRouter.get("/weekly/:id", requirePermission("reports:read"), asyncHandler(async (req, res) => {
   const companyId = req.user!.companyId;
   const report = await prisma.weeklyReport.findFirst({
-    where: { id: req.params.id, companyId },
+    where: { id: (req.params.id as string), companyId },
   });
 
   if (!report) {

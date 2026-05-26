@@ -88,7 +88,7 @@ responsiblesRouter.delete(
   asyncHandler(async (req, res) => {
     const companyId = req.user!.companyId;
     const updated = await prisma.responsible.updateMany({
-      where: { id: req.params.id, companyId },
+      where: { id: (req.params.id as string), companyId },
       data: { isActive: false },
     });
 

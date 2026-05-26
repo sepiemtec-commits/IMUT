@@ -40,12 +40,13 @@ export async function runAnomalyAnalysisForReading(
       environment: evaluation.environment,
       type: AiInsightType.ANOMALY,
       narrative: evaluation.reason,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       payload: {
         shouldAlert: evaluation.shouldAlert,
         affectedMetric: evaluation.affectedMetric,
         stats: evaluation.stats,
         readingId,
-      },
+      } as any,
     },
   });
 
@@ -90,12 +91,13 @@ export async function runAnomalyAnalysisForReading(
       severity,
       title,
       message: evaluation.reason,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       metadata: {
         affectedMetric: evaluation.affectedMetric,
         stats: evaluation.stats,
         thresholds,
         readingId,
-      },
+      } as any,
     },
   });
 

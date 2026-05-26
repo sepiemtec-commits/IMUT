@@ -3,7 +3,13 @@ import { AiInsightType } from "@prisma/client";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
-const WORKER_ROOT = join(dirname(fileURLToPath(import.meta.url)), "../..");
+const WORKER_ROOT = join(
+  typeof __dirname !== "undefined"
+    ? __dirname
+    // @ts-ignore — import.meta é válido em ESM; o guard acima protege em CJS
+    : dirname(fileURLToPath(import.meta.url)),
+  "../..",
+);
 import { prisma } from "../lib/prisma.js";
 import { mapReadings } from "../lib/mappers.js";
 import { env } from "../config/env.js";
@@ -109,12 +115,14 @@ export async function runWeeklyAnalysisForCompany(
       periodStart,
       periodEnd,
       summary: analysis.summary,
-      metrics: analysis.metrics,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      metrics: analysis.metrics as any,
     },
     update: {
       periodEnd,
       summary: analysis.summary,
-      metrics: analysis.metrics,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      metrics: analysis.metrics as any,
     },
   });
 
@@ -149,11 +157,8 @@ export async function runWeeklyAnalysisForCompany(
     data: {
       pdfPath,
       emailedAt: emailed ? new Date() : undefined,
-      metrics: {
-        ...analysis.metrics,
-        pdfPath,
-        emailedTo: recipients,
-      },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      metrics: { ...analysis.metrics, pdfPath, emailedTo: recipients } as any,
     },
   });
 
@@ -163,12 +168,13 @@ export async function runWeeklyAnalysisForCompany(
       environment: "—",
       type: AiInsightType.WEEKLY_SUMMARY,
       narrative: analysis.summary,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       payload: {
         reportId: report.id,
         insights: analysis.insights,
         metrics: analysis.metrics,
         pdfPath,
-      },
+      } as any,
     },
   });
 

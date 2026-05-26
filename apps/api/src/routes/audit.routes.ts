@@ -23,7 +23,7 @@ auditRouter.get(
   validateQuery(listQuerySchema),
   asyncHandler(async (req, res) => {
     const companyId = req.user!.companyId;
-    const { limit, action } = req.query as z.infer<typeof listQuerySchema>;
+    const { limit, action } = req.query as unknown as z.infer<typeof listQuerySchema>;
 
     const logs = await prisma.auditLog.findMany({
       where: {

@@ -55,7 +55,7 @@ alertsRouter.get("/", requirePermission("alerts:read"), asyncHandler(async (req,
 alertsRouter.get("/:id", requirePermission("alerts:read"), asyncHandler(async (req, res) => {
   const companyId = req.user!.companyId;
   const alert = await prisma.alert.findFirst({
-    where: { id: req.params.id, companyId },
+    where: { id: (req.params.id as string), companyId },
     include: {
       device: true,
       notifications: true,
@@ -72,7 +72,7 @@ alertsRouter.get("/:id", requirePermission("alerts:read"), asyncHandler(async (r
 alertsRouter.patch("/:id/acknowledge", requirePermission("alerts:acknowledge"), asyncHandler(async (req, res) => {
   const companyId = req.user!.companyId;
   const updated = await prisma.alert.updateMany({
-    where: { id: req.params.id, companyId, status: AlertStatus.OPEN },
+    where: { id: (req.params.id as string), companyId, status: AlertStatus.OPEN },
     data: {
       status: AlertStatus.ACKNOWLEDGED,
       acknowledgedAt: new Date(),
@@ -83,6 +83,6 @@ alertsRouter.patch("/:id/acknowledge", requirePermission("alerts:acknowledge"), 
     return res.status(404).json({ error: "NOT_FOUND" });
   }
 
-  const alert = await prisma.alert.findUnique({ where: { id: req.params.id } });
+  const alert = await prisma.alert.findUnique({ where: { id: (req.params.id as string) } });
   res.json({ alert });
 }));

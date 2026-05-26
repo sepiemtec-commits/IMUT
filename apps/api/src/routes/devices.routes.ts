@@ -7,6 +7,7 @@ import { requirePermission } from "../middleware/require-permission.js";
 import { asyncHandler } from "../lib/async-handler.js";
 import { validateBody } from "../middleware/validate.js";
 import { prisma } from "../lib/prisma.js";
+import { sanitizeCsvField, escapeXml } from "../utils/sanitize.js";
 
 export const devicesRouter = Router();
 
@@ -87,7 +88,7 @@ devicesRouter.get("/", requirePermission("devices:read"), asyncHandler(async (re
 devicesRouter.get("/:id", requirePermission("devices:read"), asyncHandler(async (req, res) => {
   const companyId = req.user!.companyId;
   const device = await prisma.device.findFirst({
-    where: { id: req.params.id, companyId, isActive: true },
+    where: { id: (req.params.id as string), companyId, isActive: true },
     include: { sensorReadings: { orderBy: { recordedAt: "desc" }, take: 1 } },
   });
   if (!device) return res.status(404).json({ message: "Dispositivo não encontrado" });
@@ -139,12 +140,12 @@ devicesRouter.post("/", requirePermission("devices:write"), validateBody(createD
 // PATCH /devices/:id
 devicesRouter.patch("/:id", requirePermission("devices:write"), validateBody(updateDeviceSchema), asyncHandler(async (req, res) => {
   const companyId = req.user!.companyId;
-  const existing = await prisma.device.findFirst({ where: { id: req.params.id, companyId, isActive: true } });
+  const existing = await prisma.device.findFirst({ where: { id: (req.params.id as string), companyId, isActive: true } });
   if (!existing) return res.status(404).json({ message: "Dispositivo não encontrado" });
 
   const data = req.body as z.infer<typeof updateDeviceSchema>;
   const device = await prisma.device.update({
-    where: { id: req.params.id },
+    where: { id: (req.params.id as string) },
     data,
     include: { sensorReadings: { orderBy: { recordedAt: "desc" }, take: 1 } },
   });
@@ -155,38 +156,17 @@ devicesRouter.patch("/:id", requirePermission("devices:write"), validateBody(upd
 // DELETE /devices/:id
 devicesRouter.delete("/:id", requirePermission("devices:write"), asyncHandler(async (req, res) => {
   const companyId = req.user!.companyId;
-  const existing = await prisma.device.findFirst({ where: { id: req.params.id, companyId, isActive: true } });
+  const existing = await prisma.device.findFirst({ where: { id: (req.params.id as string), companyId, isActive: true } });
   if (!existing) return res.status(404).json({ message: "Dispositivo não encontrado" });
 
-  await prisma.device.update({ where: { id: req.params.id }, data: { isActive: false } });
+  await prisma.device.update({ where: { id: (req.params.id as string) }, data: { isActive: false } });
   res.status(204).send();
 }));
-
-// ── Sanitização contra CSV Injection (fórmulas =, +, -, @, \t, \r)
-function sanitizeCsvField(value: string): string {
-  const dangerous = /^[=+\-@\t\r]/;
-  const sanitized = dangerous.test(value) ? `'${value}` : value;
-  // Envolve em aspas se contiver vírgula, aspas ou quebra de linha
-  if (/[",\n\r]/.test(sanitized)) {
-    return `"${sanitized.replace(/"/g, '""')}"`;
-  }
-  return sanitized;
-}
-
-// ── Escapa caracteres especiais XML para prevenir XML/XSS Injection
-function escapeXml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&apos;");
-}
 
 // GET /devices/:id/readings/export?format=csv&hours=168
 devicesRouter.get("/:id/readings/export", requirePermission("devices:read"), asyncHandler(async (req, res) => {
   const companyId = req.user!.companyId;
-  const device = await prisma.device.findFirst({ where: { id: req.params.id, companyId, isActive: true } });
+  const device = await prisma.device.findFirst({ where: { id: (req.params.id as string), companyId, isActive: true } });
   if (!device) return res.status(404).json({ message: "Dispositivo não encontrado" });
 
   const hours = Math.min(Number(req.query.hours ?? 168), 8760); // max 1 ano

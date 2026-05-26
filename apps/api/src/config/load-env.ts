@@ -8,6 +8,7 @@ export function loadEnvFiles(): void {
   const moduleDir =
     typeof __dirname !== "undefined"
       ? __dirname
+      // @ts-ignore — import.meta é válido em ESM; o guard acima protege em CJS
       : dirname(fileURLToPath(import.meta.url));
 
   const candidates = [
